@@ -1,0 +1,33 @@
+# Pacharm settings
+.idea/
+
+# Python chache
+__pycache__/
+.ipynb_checkpoints
+.cache
+
+# Logs folders
+logs
+tmp
+
+# Audio and video
+*.avi
+*.mp4
+
+# Images
+*.jpg
+*.bmp
+*.png
+*.svg
+
+# Archives
+*.tgz
+*.zip
+*.rar
+*.gz
+
+# Python models
+*.npy
+*.pkl
+*.pt
+*.pth
