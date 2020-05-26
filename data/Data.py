@@ -1,4 +1,5 @@
 import os
+
 from google_drive_downloader import GoogleDriveDownloader as gdd
 
 
@@ -18,7 +19,8 @@ class Downloader(object):
 
 
 class Sequence(object):
-    def __init__(self):
+    def __init__(self, sequence_id=8):
+        self.sequence_id = sequence_id
         self.calib = Kitti_link('data_odometry_calib.zip', '1jW1Yr8qBD2m63QQjN_q_EJWiQIyhtFj0')
         self.images = Kitti_link('data_odometry_color.zip', '1s6GhV8UQHdZjWaX1pcJy_8TZ9rbT-21C')
         self.poses = Kitti_link('data_odometry_poses.zip', '1m1J7T_1hvrIWbT14m9KDSrffgqhUaEfL')
@@ -29,5 +31,6 @@ class Kitti_link(object):
         self.name = name
         self.id = id
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     print(Downloader(8))
