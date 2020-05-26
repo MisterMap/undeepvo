@@ -2,7 +2,7 @@ import os
 from google_drive_downloader import GoogleDriveDownloader as gdd
 
 
-class Data(object):
+class Downloader(object):
     def __init__(self, id=8, main_dir='dataset'):
         self.sequence_id = id
         if not os.path.exists(main_dir):
@@ -28,3 +28,6 @@ class Kitti_link(object):
     def __init__(self, name, id):
         self.name = name
         self.id = id
+
+if __name__=='__main__':
+    print(Downloader(8))
