@@ -23,7 +23,7 @@ class Downloader(object):
     def clean_space(self, main_dir):
         os.remove(self.sequence.calib.name)
         os.remove(self.sequence.poses.name)
-        os.remove(os.path.join(os.curdir, main_dir, 'sequences', self.sequence.images.name))
+        os.remove(self.sequence.images.name)
 
 
 class Sequence(object):
