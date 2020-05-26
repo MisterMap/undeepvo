@@ -1,13 +1,16 @@
 import os
+import shutil
 
 from google_drive_downloader import GoogleDriveDownloader as gdd
 
 
 class Downloader(object):
-    def __init__(self, sequence_id=8, main_dir='dataset'):
-        self.sequence = Sequence(sequence_id)
-        if not os.path.exists(main_dir):
-            os.mkdir(main_dir)
+    def __init__(self, sequence_id='08', main_dir='dataset'):
+        self.sequence_id = sequence_id
+        self.main_dir = main_dir
+        self.sequence = Sequence(self.sequence_id)
+        if not os.path.exists(self.main_dir):
+            os.mkdir(self.main_dir)
 
     def download_sequence(self):
         gdd.download_file_from_google_drive(file_id=self.sequence.calib.id, dest_path=self.sequence.calib.name,
@@ -19,9 +22,14 @@ class Downloader(object):
         self.clean_space()
 
     def clean_space(self):
+        shutil.move(os.path.join(os.curdir, self.sequence_id, 'image2'), os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'image2'))
+        shutil.move(os.path.join(os.curdir, self.sequence_id, 'image2'), os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'image2'))
         os.remove(self.sequence.calib.name)
         os.remove(self.sequence.poses.name)
         os.remove(self.sequence.images.name)
+        os.remove(os.path.join(os.curdir, self.sequence_id, 'calib.txt'))
+        os.remove(os.path.join(os.curdir, self.sequence_id, 'times.txt'))
+        os.remove(os.path.join(os.curdir, self.sequence_id))
 
 
 class Sequence(object):
