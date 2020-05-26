@@ -1,2 +1,2 @@
 pykitti
-google_drive_downloader
+googledrivedownloader
