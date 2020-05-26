@@ -8,3 +8,4 @@ torch
 wget
 ipython
 pandas
+mlflow
