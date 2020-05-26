@@ -15,7 +15,7 @@ setup(name='undeepvo',
       description='Realization of undeepvo method',
       author='Deep project team',
       author_email='',
-      package_dir={'undeepvo': ""},
-      packages=["undeepvo.undeepvo_utils"],
+      package_dir={},
+      packages=["undeepvo_utils"],
       install_requires=install_requires
       )
