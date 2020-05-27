@@ -4,6 +4,7 @@ import os.path
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from tqdm.auto import tqdm
+from .mflow_handler import MlFlowHandler
 
 
 class TrainingProcessHandler(object):
@@ -34,6 +35,7 @@ class TrainingProcessHandler(object):
         self._audio_configs = {}
         self._global_epoch_step = 0
         self._global_iteration_step = 0
+        self._mlflow_handler = MlFlowHandler()
 
     def setup_handler(self, name, model):
         self._name = name
@@ -46,7 +48,9 @@ class TrainingProcessHandler(object):
         self._global_epoch_step = 0
         self._global_iteration_step = 0
 
-    def start_callback(self, epoch_count, iteration_count):
+    def start_callback(self, epoch_count, iteration_count, parameters=None):
+        if parameters is None:
+            parameters = {}
         self._epoch_count = epoch_count
         self._iteration_count = iteration_count
         self._current_epoch = 0
@@ -54,6 +58,7 @@ class TrainingProcessHandler(object):
         self._epoch_progress_bar = tqdm(total=self._epoch_count)
         if self._enable_iteration_progress_bar:
             self._iteration_progress_bar = tqdm(total=self._iteration_count // self._epoch_count)
+        self._mlflow_handler.start_callback(parameters)
 
     def epoch_callback(self, metrics, image_batches=None, figures=None, audios=None, texts=None):
         for key, value in metrics.items():
@@ -71,10 +76,11 @@ class TrainingProcessHandler(object):
             self._iteration_progress_bar.reset()
         self._epoch_progress_bar.update()
         self._epoch_progress_bar.set_postfix_str(self.metric_string("valid", metrics))
-        if self.should_save_model(metrics):
+        if self.should_save_model(metrics) and self._model is not None:
             torch.save(self._model.state_dict(), os.path.join(self._model_folder, f"{self._run_name}_checkpoint.pth"))
         self._current_epoch += 1
         self._global_epoch_step += 1
+        self._mlflow_handler.epoch_callback(metrics)
 
     def iteration_callback(self, metrics):
         for key, value in metrics.items():
@@ -93,6 +99,7 @@ class TrainingProcessHandler(object):
         if self._enable_iteration_progress_bar:
             self._iteration_progress_bar.close()
         self._epoch_progress_bar.close()
+        self._mlflow_handler.finish_callback()
 
     @staticmethod
     def metric_string(prefix, metrics):
