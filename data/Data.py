@@ -14,13 +14,18 @@ class Downloader(object):
     def download_sequence(self):
         gdd.download_file_from_google_drive(file_id=self.sequence.calib.id, dest_path=self.sequence.calib.name,
                                             unzip=True)
+        os.rename(os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib.txt'),
+                  os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib1.txt'))
         gdd.download_file_from_google_drive(file_id=self.sequence.poses.id, dest_path=self.sequence.poses.name,
                                             unzip=True)
         gdd.download_file_from_google_drive(file_id=self.sequence.images.id, dest_path=self.sequence.images.name,
                                             unzip=True)
+        os.remove(os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib.txt'))
+        os.rename(os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib1.txt'),
+                  os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib.txt'))
         self.clean_space(self.main_dir)
 
-    def clean_space(self, main_dir):
+    def clean_space(self):
         os.remove(self.sequence.calib.name)
         os.remove(self.sequence.poses.name)
         os.remove(self.sequence.images.name)
