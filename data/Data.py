@@ -1,5 +1,6 @@
 import os
 
+import pykitti
 from google_drive_downloader import GoogleDriveDownloader as gdd
 
 
@@ -23,12 +24,16 @@ class Downloader(object):
         os.remove(os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib.txt'))
         os.rename(os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib1.txt'),
                   os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib.txt'))
-        self.clean_space(self.main_dir)
+        self.clean_space()
+        self.pykiti_sequence()
 
     def clean_space(self):
         os.remove(self.sequence.calib.name)
         os.remove(self.sequence.poses.name)
         os.remove(self.sequence.images.name)
+
+    def pykiti_sequence(self, frames=range(0, 20, 5)):
+        self.dataset = pykitti.odometry(self.sequence.main_dir, self.sequence.sequence_id, frames=frames)
 
 
 class Sequence(object):
@@ -53,3 +58,4 @@ class Kitti_link(object):
 if __name__ == '__main__':
     s8 = Downloader('08')
     s8.download_sequence()
+    s8.pykiti_sequence(range(0, 100, 10))
