@@ -59,11 +59,6 @@ class LastUpBlock(nn.Module):
         out = self.convs(x)
         
         return out
-
-def init_weights(m):
-    if isinstance(m, nn.Conv2d):
-        torch.nn.init.xavier_uniform_(m.weight)
-        m.bias.data.fill_(0.01)
         
 class DepthNet(nn.Module):
     def __init__(self, n_base_channels=32):
