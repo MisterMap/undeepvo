@@ -79,7 +79,7 @@ class DepthNet(nn.Module):
             UnetUpBlock(n_base_channels * 8, n_base_channels * 4), # 128
             UnetUpBlock(n_base_channels * 4, n_base_channels * 2), # 64 
             UnetUpBlock(n_base_channels * 2, n_base_channels), # 32 
-            UnetUpBlock(n_base_channels, n_base_channels // 2), # 32
+            UnetUpBlock(n_base_channels, n_base_channels // 2), # 16
         ])
 
         self.last_up = LastUpBlock(n_base_channels // 2, 1)
