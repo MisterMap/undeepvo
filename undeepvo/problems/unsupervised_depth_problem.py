@@ -1,4 +1,4 @@
-from undeepvo_utils import Problem
+from undeepvo.utils import Problem
 import torch
 import matplotlib.pyplot as plt
 

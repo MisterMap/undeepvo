@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from unsupervised_depth_problem import UnsupervisedDatasetManager
+from undeepvo.problems import UnsupervisedDatasetManager
 
 
 class TestUnsupervisedDatasetManager(unittest.TestCase):

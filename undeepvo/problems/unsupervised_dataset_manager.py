@@ -1,4 +1,4 @@
-from undeepvo_utils import DatasetManager
+from undeepvo.utils import DatasetManager
 
 
 class UnsupervisedDatasetManager(DatasetManager):

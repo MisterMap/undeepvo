@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from models import UnDeepVO
+from undeepvo.models import UnDeepVO
 
 
 class TestUnDeepVO(unittest.TestCase):
