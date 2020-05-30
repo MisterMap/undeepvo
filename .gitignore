@@ -1,6 +1,7 @@
 # Pacharm settings
 .idea/
 
+venv/
 # Python chache
 __pycache__/
 .ipynb_checkpoints
