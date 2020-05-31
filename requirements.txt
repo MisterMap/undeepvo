@@ -1,3 +1,5 @@
+pykitti
+googledrivedownloader
 numpy
 scipy
 matplotlib
