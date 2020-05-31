@@ -12,3 +12,4 @@ ipython
 pandas
 mlflow
 albumentations==0.4.5
+tensorboard

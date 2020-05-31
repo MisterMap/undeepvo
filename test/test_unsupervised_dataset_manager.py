@@ -2,21 +2,26 @@ import unittest
 import torch
 import os
 from undeepvo.problems import UnsupervisedDatasetManager
-import pykitti
+import pykitti.odometry
 from undeepvo.data import Downloader
 
 
-sequence_8 = Downloader('08')
-# if not os.path.exists(".dataset/"):
-#     print("hi")
-#     sequence_8.download_sequence()
-lengths = (200, 30, 30)
-dataset = pykitti.odometry(sequence_8.main_dir, sequence_8.sequence_id, frames=range(0, 260, 1))
+import sys
+if sys.platform == "win32":
+    WORKERS_COUNT = 0
+else:
+    WORKERS_COUNT = 4
 
 
 class TestUnsupervisedDatasetManager(unittest.TestCase):
     def test_dataset_manager(self):
-        dataset_manager = UnsupervisedDatasetManager(dataset, lenghts=lengths)
+        sequence_8 = Downloader('08')
+        if not os.path.exists("./dataset/poses"):
+            print("Download dataset")
+            sequence_8.download_sequence()
+        lengths = (200, 30, 30)
+        dataset = pykitti.odometry(sequence_8.main_dir, sequence_8.sequence_id, frames=range(0, 260, 1))
+        dataset_manager = UnsupervisedDatasetManager(dataset, lenghts=lengths, num_workers=WORKERS_COUNT)
         self.assertEqual(len(dataset_manager.get_train_dataset()), lengths[0])
         self.assertEqual(len(dataset_manager.get_test_dataset()), lengths[1])
         self.assertEqual(len(dataset_manager.get_validation_dataset()), lengths[2])
