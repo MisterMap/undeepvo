@@ -1,43 +1,56 @@
-def merge_dicts(dict1, dict2):
-    return dict2.update(dict1)
+import numpy as np
+from PIL import Image
+import torch
 
 
 class Datapoint:
     def __init__(self, current_pair, next_pair):
+        self._current_left_name = "left_current_image"  # rename
+        self._current_right_name = "right_current_image"
+        self._next_left_name = "left_next_image"
+        self._next_right_name = "right_next_image"
+
         self._current_left = current_pair[0]
         self._current_right = current_pair[1]
         self._next_left = next_pair[0]
         self._next_right = next_pair[1]
 
     def get_current_left(self):
-        return {"left_current_image": self._current_left}
+        return {self._current_left_name: self._current_left}
 
     def get_current_right(self):
-        return {"right_current_image": self._current_right}
+        return {self._current_right_name: self._current_right}
 
     def get_next_left(self):
-        return {"left_next_image": self._current_left}
+        return {self._next_left_name: self._current_left}
 
     def get_next_right(self):
-        return {"right_next_image": self._current_right}
+        return {self._next_right_name: self._current_right}
 
     def get_left(self):
-        return merge_dicts(self.get_current_left(), self.get_next_left())
+        return {**self.get_current_left(), **self.get_next_left()}
 
     def get_right(self):
-        return merge_dicts(self.get_current_right(), self.get_next_right())
+        return {**self.get_current_right(), **self.get_next_right()}
 
     def get_current(self):
-        return merge_dicts(self.get_current_left(), self.get_current_right())
+        return {**self.get_current_left(), **self.get_current_right()}
 
     def get_next(self):
-        return merge_dicts(self.get_next_left(), self.get_next_right())
+        return {**self.get_next_left(), **self.get_next_right()}
 
     def get_data(self):
-        return merge_dicts(self.get_current(), self.get_next())
+        return {**self.get_current(), **self.get_next()}
 
-    def transform(self, transform):
-        self._current_left = transform(self._current_left)
-        self._current_right = transform(self._current_right)
-        self._next_left = transform(self._next_left)
-        self._next_right = transform(self._next_right)
+    def get_for_transform(self):
+        return {"image": np.array(self._current_left),
+                "image2": np.array(self._current_right),
+                "image3": np.array(self._next_left),
+                "image4": np.array(self._next_right)}
+
+    def from_transform(self, dict_datapoint):
+        self._current_left = torch.from_numpy(dict_datapoint["image"]).permute(2, 1, 0)
+        self._current_right = torch.from_numpy(dict_datapoint["image2"]).permute(2, 1, 0)
+        self._next_left = torch.from_numpy(dict_datapoint["image3"]).permute(2, 1, 0)
+        self._next_right = torch.from_numpy(dict_datapoint["image4"]).permute(2, 1, 0)
+        return self

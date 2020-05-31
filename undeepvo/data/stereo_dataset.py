@@ -14,7 +14,7 @@ class StereoDataset(Dataset):
     def __getitem__(self, index):
         datapoint = self._sequence.get_sequence(index)
         if self._transform:
-            datapoint.transform(self._transform)
+            datapoint = datapoint.from_transform(self._transform(**datapoint.get_for_transform()))
 
         return datapoint.get_data()
 

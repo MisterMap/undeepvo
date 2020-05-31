@@ -2,6 +2,7 @@
 .idea/
 
 venv/
+test/data*
 # Python chache
 __pycache__/
 .ipynb_checkpoints

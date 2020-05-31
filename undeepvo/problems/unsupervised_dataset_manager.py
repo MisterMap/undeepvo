@@ -5,11 +5,11 @@ from torch.utils.data import DataLoader, random_split
 
 
 class UnsupervisedDatasetManager(DatasetManager):
-    def __init__(self, kitti_dataset, num_workers=4, rate=(0.8, 0.1, 0.1)):
+    def __init__(self, kitti_dataset, num_workers=4, lenghts=(80, 10, 10)):
         dataset = StereoDataset(dataset=kitti_dataset)
-        train, val, test = random_split(dataset, rate)
+        train, val, test = random_split(dataset, lenghts)
         self._num_workers = num_workers
-        super(UnsupervisedDatasetManager).__init__(train, val, test)
+        super().__init__(train, val, test)
 
     def get_train_batches(self, batch_size):
         self._train_dataset.dataset.set_transform(DataTransformManager.get_train_transform())
