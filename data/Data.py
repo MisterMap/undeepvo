@@ -18,10 +18,12 @@ class Downloader(object):
                                             unzip=True)
         gdd.download_file_from_google_drive(file_id=self.sequence.images.id, dest_path=self.sequence.images.name,
                                             unzip=True)
-        os.remove(os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib.txt'))
-        os.rename(os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib1.txt'),
+        if os.path.exists(os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib.txt')):
+            os.remove(os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib.txt'))
+            if os.path.exists(os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib1.txt')):
+                os.rename(os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib1.txt'),
                   os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib.txt'))
-        self.clean_space(self.main_dir)
+        self.clean_space()
 
     def clean_space(self):
         os.remove(self.sequence.calib.name)
