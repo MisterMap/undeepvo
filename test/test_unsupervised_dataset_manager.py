@@ -31,6 +31,7 @@ class TestUnsupervisedDatasetManager(unittest.TestCase):
             self.assertEqual(batch["right_current_image"].shape, torch.Size([20, 3, 384, 128]))
             self.assertEqual(batch["left_next_image"].shape, torch.Size([20, 3, 384, 128]))
             self.assertEqual(batch["right_next_image"].shape, torch.Size([20, 3, 384, 128]))
+            self.assertEqual(batch["right_next_image"].dtype, torch.float32)
             break
         batches = dataset_manager.get_validation_batches(20)
         for batch in batches:
