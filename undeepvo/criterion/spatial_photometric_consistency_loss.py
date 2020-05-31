@@ -14,6 +14,9 @@ class SpatialPhotometricConsistencyLoss(torch.nn.Module):
         self.right_camera_matrix = right_camera_matrix
         self.transfrom_from_left_to_right = transfrom_from_left_to_right
 
+        self.l1_loss = torch.nn.L1Loss()
+        self.SSIM_loss = kornia.SSIM(window_size=self.window_size, reduction=self.reduction, max_val=self.max_val)
+
     def forward(self, left_current_img, right_current_img, left_current_depth, right_current_depth):
         generated_right_img = kornia.warp_frame_depth(image_src=left_current_img,
                                                       depth_dst=right_current_depth,
@@ -25,11 +28,10 @@ class SpatialPhotometricConsistencyLoss(torch.nn.Module):
                                                      src_trans_dst=torch.inverse(self.transfrom_from_left_to_right),
                                                      camera_matrix=self.right_camera_matrix)
 
-        l1_loss = torch.nn.L1Loss()
-        SSIM_loss = kornia.SSIM(window_size = self.window_size, reduction = self.reduction, max_val = self.max_val)
 
-        left_img_loss = self.lambda_s * SSIM_loss(generated_left_img, left_current_img) + \
-                        (1 - self.lambda_s) * l1_loss(generated_left_img, left_current_img)
-        right_img_loss = self.lambda_s * SSIM_loss(generated_right_img, right_current_img) + \
-                         (1 - self.lambda_s) * l1_loss(generated_right_img, right_current_img)
+
+        left_img_loss = self.lambda_s * self.SSIM_loss(generated_left_img, left_current_img) + \
+                        (1 - self.lambda_s) * self.l1_loss(generated_left_img, left_current_img)
+        right_img_loss = self.lambda_s * self.SSIM_loss(generated_right_img, right_current_img) + \
+                         (1 - self.lambda_s) * self.l1_loss(generated_right_img, right_current_img)
         return left_img_loss + right_img_loss
