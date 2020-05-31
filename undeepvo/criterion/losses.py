@@ -47,7 +47,7 @@ class SpatialLosses(torch.nn.Module):
                                                                          left_current_depth, right_current_depth)
 
         disparity_consistency_loss = self.disparity_consistency_loss(left_current_depth, right_current_depth)
-        pose_loss = self.pose_loss(self.lambda_position, self.lambda_angle, left_position, right_position, left_angle, right_angle)
+        pose_loss = self.pose_loss(left_position, right_position, left_angle, right_angle)
         return photometric_consistency_loss + disparity_consistency_loss + pose_loss
 
 
