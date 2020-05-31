@@ -1,13 +1,19 @@
 import torch
 import kornia
 
-from spatial_photometric_consistency_loss import SpatialPhotometricConsistencyLoss
-from disparity_consistency_loss import DisparityConsistencyLoss
-from pose_loss import PoseLoss
+from .spatial_photometric_consistency_loss import SpatialPhotometricConsistencyLoss
+from .disparity_consistency_loss import DisparityConsistencyLoss
+from .pose_loss import PoseLoss
 
-from temporal_photometric_consistency_loss import TemporalPhotometricConsistencyLoss
+from .temporal_photometric_consistency_loss import TemporalPhotometricConsistencyLoss
 
-#Photometric Consistency Loss
+class Criterion(torch.nn.Module):
+    def __init__(self):
+        pass
+
+    def forward(self):
+        pass
+
 class SpatialLosses(torch.nn.Module):
     def __init__(self, camera_baseline, focal_length, left_camera_matrix, right_camera_matrix, transfrom_from_left_to_right, lambda_position, lambda_angle,
                  lambda_s, window_size = 11, reduction: str = "none", max_val: float = 1.0):
