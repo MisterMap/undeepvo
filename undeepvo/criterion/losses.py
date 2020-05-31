@@ -41,7 +41,7 @@ class SpatialLosses(torch.nn.Module):
 
     def forward(self, left_current_image, right_current_image,
                 left_current_depth, right_current_depth,
-                lambda_position, lambda_angle, left_position, right_position, left_angle, right_angle,
+                left_position, right_position, left_angle, right_angle,
                 ):
         photometric_consistency_loss = self.photometric_consistency_loss(left_current_image, right_current_image, left_current_depth, right_current_depth,
                                           self.transfrom_from_left_to_right, self.left_camera_matrix, self.right_camera_matrix)
