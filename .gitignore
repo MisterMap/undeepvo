@@ -1,6 +1,8 @@
 # Pacharm settings
 .idea/
 
+venv/
+test/data*
 # Python chache
 __pycache__/
 .ipynb_checkpoints
@@ -19,6 +21,7 @@ tmp
 *.bmp
 *.png
 *.svg
+!test/loss_dataset/*.png
 
 # Archives
 *.tgz

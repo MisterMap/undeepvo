@@ -1,3 +1,5 @@
+pykitti
+googledrivedownloader
 numpy
 scipy
 matplotlib
@@ -9,3 +11,5 @@ wget
 ipython
 pandas
 mlflow
+kornia
+albumentations==0.4.5
