@@ -11,3 +11,4 @@ wget
 ipython
 pandas
 mlflow
+kornia
