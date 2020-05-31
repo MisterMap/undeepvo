@@ -21,6 +21,7 @@ tmp
 *.bmp
 *.png
 *.svg
+!test/loss_dataset/*.png
 
 # Archives
 *.tgz

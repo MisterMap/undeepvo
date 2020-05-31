@@ -61,9 +61,11 @@ class LastUpBlock(nn.Module):
         return out
         
 class DepthNet(nn.Module):
-    def __init__(self, n_base_channels=32):
+    def __init__(self, n_base_channels=32, max_depth=10):
         super().__init__()
-        
+
+        self.max_depth = max_depth
+
         self.down_blocks = nn.ModuleList([
             UnetDownBlock(3, n_base_channels, kernel_size=7), # 32 out
             UnetDownBlock(n_base_channels, n_base_channels * 2, kernel_size=5), # 64
@@ -97,6 +99,8 @@ class DepthNet(nn.Module):
             out = block(out, outputs_before_pooling[-i - 2])
 
         out = self.last_up(out)
+
+        out = torch.sigmoid(out) * self.max_depth
 
         return out
  

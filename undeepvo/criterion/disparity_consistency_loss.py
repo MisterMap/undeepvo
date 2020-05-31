@@ -18,6 +18,7 @@ class DisparityConsistencyLoss(torch.nn.Module):
     #    return left_horizontal_distance, right_horizontal_distance
 
     def get_disparities(self, left_depth_map, right_depth_map):
+        #left_depth_map = (torch.abs(left_depth_map) <= 1e-4) * torch.ones_like(left_depth_map)*1e-4 +
         left_disparity = self.Bf / left_depth_map
         right_disparity = self.Bf / right_depth_map
         return left_disparity, right_disparity
@@ -41,7 +42,5 @@ class DisparityConsistencyLoss(torch.nn.Module):
 
         generated_left_disparity, generated_right_disparity = self.generate_disparity_maps(left_disparity, right_disparity,
                                                                                            left_current_depth, right_current_depth)
-
-
 
         return self.l1_loss(left_disparity, generated_left_disparity) + self.l1_loss(right_disparity, generated_right_disparity)

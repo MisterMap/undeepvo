@@ -34,4 +34,6 @@ class SpatialPhotometricConsistencyLoss(torch.nn.Module):
                         (1 - self.lambda_s) * self.l1_loss(generated_left_img, left_current_img)
         right_img_loss = self.lambda_s * self.SSIM_loss(generated_right_img, right_current_img) + \
                          (1 - self.lambda_s) * self.l1_loss(generated_right_img, right_current_img)
+
+
         return left_img_loss + right_img_loss
