@@ -11,4 +11,5 @@ wget
 ipython
 pandas
 mlflow
+kornia
 albumentations==0.4.5
