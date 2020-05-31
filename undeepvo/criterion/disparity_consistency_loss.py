@@ -10,6 +10,8 @@ class DisparityConsistencyLoss(torch.nn.Module):
         self.right_camera_matrix = right_camera_matrix
         self.transfrom_from_left_to_right = transfrom_from_left_to_right
 
+        self.l1_loss = torch.nn.L1Loss()
+
     #def get_distance_maps(self, left_current_depth, right_current_depth):
     #    left_horizontal_distance = self.Bf / left_current_depth
     #    right_horizontal_distance = self.Bf / right_current_depth
@@ -41,5 +43,5 @@ class DisparityConsistencyLoss(torch.nn.Module):
                                                                                            left_current_depth, right_current_depth)
 
 
-        l1_loss = torch.nn.L1Loss()
-        return l1_loss(left_disparity, generated_left_disparity) + l1_loss(right_disparity, generated_right_disparity)
+
+        return self.l1_loss(left_disparity, generated_left_disparity) + self.l1_loss(right_disparity, generated_right_disparity)
