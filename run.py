@@ -1,8 +1,12 @@
 #!pip install --upgrade -q git+https://github.com/MisterMap/undeepvo.git@develop
 #example: python3 train.py -epoch 10 -max_depth 100 -split 100 10 10 -frames_range 20 260 2
+# salloc -p gpu_big --mem 100Gb --gpus 4
+#python3 run.py -epoch 20 -max_depth 100 -split 3600 235 235 -frames_range 0 4070 1 -mlflow_tags_name Jhores_slurm
 
 import argparse
+
 import pykitti.odometry
+
 from undeepvo.criterion import UnsupervisedCriterion
 from undeepvo.models import UnDeepVO
 from undeepvo.problems import UnsupervisedDatasetManager, UnsupervisedDepthProblem
