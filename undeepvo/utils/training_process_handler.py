@@ -9,7 +9,7 @@ from .mflow_handler import MlFlowHandler
 
 class TrainingProcessHandler(object):
     def __init__(self, data_folder="logs", model_folder="model", enable_iteration_progress_bar=False,
-                 model_save_key="loss"):
+                 model_save_key="loss", mlflow_tags={}):
         self._name = None
         self._epoch_count = 0
         self._iteration_count = 0
@@ -35,7 +35,7 @@ class TrainingProcessHandler(object):
         self._audio_configs = {}
         self._global_epoch_step = 0
         self._global_iteration_step = 0
-        self._mlflow_handler = MlFlowHandler()
+        self._mlflow_handler = MlFlowHandler(mlflow_tags=mlflow_tags)
 
     def setup_handler(self, name, model):
         self._name = name
