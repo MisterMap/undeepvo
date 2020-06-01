@@ -60,11 +60,12 @@ class MlFlowHandler(object):
             print(f"[WARNING][MlFlowHandler] - [FinishCallback] {msg}")
             print(f"[WARNING][MlFlowHandler] - [FinishCallback] mlflow is disabled")
 
-    def epoch_callback(self, metrics):
+    def epoch_callback(self, metrics, current_epoch=0):
         if not self._enable_mlflow:
             return
         try:
-            mlflow.log_metrics(metrics)
+            metrics["epoch"] = current_epoch
+            mlflow.log_metrics(metrics, current_epoch)
         except mlflow.exceptions.MlflowException as msg:
             self._enable_mlflow = False
             print(f"[WARNING][MlFlowHandler] - [EpochCallback] {msg}")

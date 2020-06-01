@@ -80,7 +80,7 @@ class TrainingProcessHandler(object):
             torch.save(self._model.state_dict(), os.path.join(self._model_folder, f"{self._run_name}_checkpoint.pth"))
         self._current_epoch += 1
         self._global_epoch_step += 1
-        self._mlflow_handler.epoch_callback(metrics)
+        self._mlflow_handler.epoch_callback(metrics, self._current_epoch)
 
     def iteration_callback(self, metrics):
         for key, value in metrics.items():
