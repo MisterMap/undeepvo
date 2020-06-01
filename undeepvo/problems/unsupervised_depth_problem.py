@@ -5,6 +5,7 @@ import torch
 
 from undeepvo.utils import Problem
 from undeepvo.utils.result_data_point import ResultDataPoint
+import numpy as np
 
 
 class UnsupervisedDepthProblem(Problem):
@@ -57,8 +58,8 @@ class UnsupervisedDepthProblem(Problem):
         depth_image = depth_image[0].cpu().permute(1, 2, 0).detach().numpy()[:, :, 0]
         figure, axes = plt.subplots(2, 1, dpi=150)
         raw_image = image.cpu().permute(1, 2, 0).detach().numpy()
-        axes[0].imshow(raw_image)
+        axes[0].imshow(np.clip(raw_image, 0, 1))
         axes[0].set_title("Left current image")
-        axes[1].imshow(depth_image, cmap="inferno")
+        axes[1].imshow(np.clip(depth_image, 0, 1), cmap="inferno")
         axes[1].set_title("Left current depth")
         return {"depth": figure}
