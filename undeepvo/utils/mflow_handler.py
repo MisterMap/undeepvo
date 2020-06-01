@@ -37,11 +37,12 @@ class MlFlowHandler(object):
         except IOError as msg:
             print(f"[WARNING][MlFlowHandler] - [CreateDataBricksCredential] {msg}")
 
-    def start_callback(self):
+    def start_callback(self, parameters):
         try:
             mlflow.set_experiment(self._experiment_name)
             mlflow.start_run()
             mlflow.set_tags(self._mlflow_tags)
+            mlflow.log_params(parameters)
             mlflow.log_params(self._mlflow_parameters)
 
         except mlflow.exceptions.MlflowException as msg:
