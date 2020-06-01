@@ -40,8 +40,9 @@ class MlFlowHandler(object):
         try:
             mlflow.set_experiment(self._experiment_name)
             mlflow.start_run()
-            mlflow.log_params(parameters)
             mlflow.set_tags(self._mlflow_tags)
+            mlflow.log_params(parameters)
+
         except mlflow.exceptions.MlflowException as msg:
             self._enable_mlflow = False
             print(f"[WARNING][MlFlowHandler] - [StartCallback] {msg}")
