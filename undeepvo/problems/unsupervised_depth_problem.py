@@ -60,6 +60,6 @@ class UnsupervisedDepthProblem(Problem):
         raw_image = image.cpu().permute(1, 2, 0).detach().numpy()
         axes[0].imshow(np.clip(raw_image, 0, 1))
         axes[0].set_title("Left current image")
-        axes[1].imshow(np.clip(depth_image, 0, 1), cmap="inferno")
+        axes[1].imshow(np.clip(depth_image, 0, 10) / 10, cmap="inferno")
         axes[1].set_title("Left current depth")
         return {"depth": figure}

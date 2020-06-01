@@ -53,7 +53,7 @@ class TestUnsupervisedDepthProblem(unittest.TestCase):
         optimizer_manger = OptimizerManager()
         criterion = UnsupervisedCriterion(dataset_manager.get_cameras_calibration("cuda:0"),
                                           0.1, 1, 0.85)
-        handler = TrainingProcessHandler()
+        handler = TrainingProcessHandler(mlflow_tags={"name": "test"})
         problem = UnsupervisedDepthProblem(model, criterion, optimizer_manger, dataset_manager, handler,
                                            batch_size=1)
         problem.train(1)
