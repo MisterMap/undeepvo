@@ -13,3 +13,4 @@ pandas
 mlflow
 kornia
 albumentations==0.4.5
+tensorboard>=1.14.0
