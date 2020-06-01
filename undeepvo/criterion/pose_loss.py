@@ -7,6 +7,7 @@ class PoseLoss(torch.nn.Module):
         self.lambda_position = lambda_position
         self.lambda_angle = lambda_angle
 
+    # TODO: add matrix calcualtion from
     def forward(self, left_position, right_position,
                 left_angle, right_angle):
         l1_loss = torch.nn.L1Loss()
