@@ -13,8 +13,7 @@ class UnsupervisedDepthProblem(Problem):
         right_current_output = ResultDataPoint(batch["right_current_image"].to(self._device)).apply_model(self._model)
         left_next_output = ResultDataPoint(batch["left_next_image"].to(self._device)).apply_model(self._model)
         right_next_output = ResultDataPoint(batch["right_next_image"].to(self._device)).apply_model(self._model)
-        loss = self._criterion(left_current_output, right_current_output, left_next_output, right_next_output)
-        return loss
+        return self._criterion(left_current_output, right_current_output, left_next_output, right_next_output)
 
     def _train_step(self, batch):
         start_time = time.time()
@@ -22,21 +21,30 @@ class UnsupervisedDepthProblem(Problem):
         self._model.train()
 
         # Forward
-        loss = self.evaluate_batch(batch)
+        loss, spatial_photometric_loss, disparity_loss, pose_loss = self.evaluate_batch(batch)
 
         # Backward
         loss.backward()
         self._optimizer.step()
         end_time = time.time()
-        return {"loss": loss.item(), "time": end_time - start_time}
+        return {"loss": loss.item(), "time": end_time - start_time,
+                "spat_photo_loss": spatial_photometric_loss.item(), "disparity_loss": disparity_loss.item(),
+                "pose_loss": pose_loss.item()}
 
     def evaluate_batches(self, batches):
         self._model.eval()
-        loss = 0
+        total_loss, total_spatial_photometric_loss, total_disparity_loss, total_pose_loss = 0, 0, 0, 0
         with torch.no_grad():
             for batch in batches:
-                loss += self.evaluate_batch(batch).item()
-        return {"loss": loss / len(batches)}
+                loss, spatial_photometric_loss, disparity_loss, pose_loss = self.evaluate_batch(batch)
+                total_loss += loss.item()
+                total_disparity_loss += disparity_loss.item()
+                total_pose_loss += pose_loss.item()
+                total_spatial_photometric_loss += spatial_photometric_loss.item()
+        return {"loss": total_loss / len(batches),
+                "disparity_loss": total_disparity_loss / len(batches),
+                "pose_loss": total_pose_loss / len(batches),
+                "spat_photo_loss": total_spatial_photometric_loss / len(batches)}
 
     def get_additional_data(self):
         return {"figures": self._get_depth_figure()}
