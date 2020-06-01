@@ -20,8 +20,7 @@ class MlFlowHandler(object):
         self._experiment_name = experiment_name
         self._mlflow_client = mlflow.tracking.MlflowClient(host_uri)
         self._enable_mlflow = True
-        for _tag, _val in mlflow_tags.items():
-            mlflow.set_tag(_tag, _val)
+        self._mlflow_tags = mlflow_tags
 
     @staticmethod
     def _create_databricks_credential(user_name, password, databricks_host):
@@ -40,6 +39,7 @@ class MlFlowHandler(object):
     def start_callback(self, parameters):
         try:
             mlflow.set_experiment(self._experiment_name)
+            mlflow.set_tags(self._mlflow_tags)
             mlflow.start_run()
             mlflow.log_params(parameters)
         except mlflow.exceptions.MlflowException as msg:
