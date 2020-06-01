@@ -11,7 +11,7 @@ DEFAULT_EXPERIMENT_NAME = "/undeepvo/undeepvo"
 
 class MlFlowHandler(object):
     def __init__(self, experiment_name=DEFAULT_EXPERIMENT_NAME, user_name=DEFAULT_USER_NAME, password=DEFAULT_PASSWORD,
-                 host_uri="databricks", create_databricks_credential=True, databricks_host=DEFAULT_DATABRICKS_HOST):
+                 host_uri="databricks", create_databricks_credential=True, databricks_host=DEFAULT_DATABRICKS_HOST, mlflow_tags={}, mlflow_parameters={}):
         self._user_name = DEFAULT_USER_NAME
         self._password = DEFAULT_PASSWORD
         if host_uri == "databricks" and create_databricks_credential:
@@ -20,6 +20,8 @@ class MlFlowHandler(object):
         self._experiment_name = experiment_name
         self._mlflow_client = mlflow.tracking.MlflowClient(host_uri)
         self._enable_mlflow = True
+        self._mlflow_tags = mlflow_tags
+        self._mlflow_parameters = mlflow_parameters
 
     @staticmethod
     def _create_databricks_credential(user_name, password, databricks_host):
@@ -39,7 +41,10 @@ class MlFlowHandler(object):
         try:
             mlflow.set_experiment(self._experiment_name)
             mlflow.start_run()
+            mlflow.set_tags(self._mlflow_tags)
             mlflow.log_params(parameters)
+            mlflow.log_params(self._mlflow_parameters)
+
         except mlflow.exceptions.MlflowException as msg:
             self._enable_mlflow = False
             print(f"[WARNING][MlFlowHandler] - [StartCallback] {msg}")
