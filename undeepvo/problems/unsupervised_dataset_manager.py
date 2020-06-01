@@ -2,6 +2,8 @@ from undeepvo.data.datatransform_manager import DataTransformManager
 from undeepvo.data.stereo_dataset import StereoDataset
 from undeepvo.utils import DatasetManager
 from torch.utils.data import DataLoader, random_split
+import numpy as np
+from undeepvo.data.cameras_calibration import CamerasCalibration
 
 
 class UnsupervisedDatasetManager(DatasetManager):
@@ -22,3 +24,14 @@ class UnsupervisedDatasetManager(DatasetManager):
     def get_test_batches(self, batch_size):
         self._test_dataset.dataset.set_transform(DataTransformManager.get_test_transform())
         return DataLoader(self._test_dataset, batch_size=batch_size, shuffle=False, num_workers=self._num_workers)
+
+    @staticmethod
+    def get_cameras_calibration(device="cuda:0"):
+        left_camera_matrix = np.array([[707.0912, 0., 601.8873],
+                                       [0., 707.0912, 183.1104],
+                                       [0., 0., 1.]])
+        right_camera_matrix = np.array([[707.0912, 0., 601.8873],
+                                        [0., 707.0912, 183.1104],
+                                        [0., 0., 1.]])
+        camera_baseline = 0.54
+        return CamerasCalibration(camera_baseline, left_camera_matrix, right_camera_matrix, device)
