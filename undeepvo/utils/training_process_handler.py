@@ -134,7 +134,7 @@ class TrainingProcessHandler(object):
     def _write_figures(self, figures):
         for key, value in figures.items():
             self._writer.add_figure(key, value, self._global_epoch_step)
-            value.savefig("img.png")
+            value.savefig(f"img_{self._global_epoch_step}.png")
 
     def _write_audios(self, audios):
         for key, value in audios.items():
