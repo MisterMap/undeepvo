@@ -1,5 +1,5 @@
 import unittest
-from undeepvo_utils import TrainingProcessHandler
+from undeepvo.utils import TrainingProcessHandler
 
 
 class TestTrainingProcessHandler(unittest.TestCase):

@@ -27,7 +27,7 @@ class MlFlowHandler(object):
             home_folder = os.environ["HOME"]
             with open(home_folder + "/.databrickscfg", "w") as f:
                 f.write("[DEFAULT]\n")
-                f.write(f"{databricks_host}\n")
+                f.write(f"host = {databricks_host}\n")
                 f.write(f"username = {user_name}\n")
                 f.write(f"password = {password}\n")
         except KeyError:
