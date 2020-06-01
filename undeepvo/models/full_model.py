@@ -6,7 +6,7 @@ from .utils import init_weights
 
 
 class UnDeepVO(nn.Module):
-    def __init__(self, max_depth):
+    def __init__(self, max_depth=100):
         super(UnDeepVO, self).__init__()
         self.depth_net = DepthNet(max_depth=max_depth)
         self.pose_net = PoseNet()
