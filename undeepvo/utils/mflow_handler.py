@@ -66,6 +66,7 @@ class MlFlowHandler(object):
         try:
             metrics["epoch"] = current_epoch
             mlflow.log_metrics(metrics, current_epoch)
+            mlflow.log_artifact("img.png")
         except mlflow.exceptions.MlflowException as msg:
             self._enable_mlflow = False
             print(f"[WARNING][MlFlowHandler] - [EpochCallback] {msg}")
