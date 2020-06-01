@@ -2,6 +2,7 @@
 .idea/
 
 venv/
+dataset/
 test/data*
 # Python chache
 __pycache__/

@@ -1,13 +1,12 @@
 import unittest
-import torchvision
-import torch
-import kornia
 
-from PIL import Image
+import kornia
 import numpy as np
+import torch
+import torchvision
+from PIL import Image
 
 from undeepvo.criterion import SpatialLosses, TemporalPhotometricConsistencyLoss
-
 from undeepvo.models import UnDeepVO
 
 device = "cpu"
@@ -83,8 +82,6 @@ class TestSpatialLoss(unittest.TestCase):
         gen_img = np.swapaxes(gen_img, 0, 1)
         gen_img = np.swapaxes(gen_img, 1, 2)
 
-        # camera_baseline, focal_length, left_camera_matrix, right_camera_matrix, transfrom_from_left_to_right, lambda_position, lambda_angle,
-        #                 lambda_s,
         camera_baseline = 0.54
         focal_length = left_camera_matrix[0, 0, 0]
         transfrom_from_left_to_right = src_trans_dst
@@ -105,11 +102,11 @@ class TestSpatialLoss(unittest.TestCase):
                                        left_camera_matrix, right_camera_matrix, transfrom_from_left_to_right,
                                        lambda_position, lambda_angle, lambda_s)
 
-        out = spatial_losses(left_current_img, right_current_img,
-                             left_current_depth, right_current_depth,
-                             left_position, right_position,
-                             left_rotation, right_rotation
-                             )
+        out, *_ = spatial_losses(left_current_img, right_current_img,
+                                 left_current_depth, right_current_depth,
+                                 left_position, right_position,
+                                 left_rotation, right_rotation
+                                 )
         self.assertEqual(out.shape, torch.Size([]))
         self.assertFalse(torch.isnan(out))
         self.assertTrue(out > 0)
@@ -176,11 +173,10 @@ class TestSpatialLoss(unittest.TestCase):
         gen_img = np.swapaxes(gen_img, 0, 1)
         gen_img = np.swapaxes(gen_img, 1, 2)
 
-        # camera_baseline, focal_length, left_camera_matrix, right_camera_matrix, transfrom_from_left_to_right, lambda_position, lambda_angle,
-        #                 lambda_s,
         camera_baseline = 0.54
+        src_trans_dst[0, 3] = camera_baseline
         focal_length = left_camera_matrix[0, 0, 0]
-        transfrom_from_left_to_right = src_trans_dst
+        transform_from_left_to_right = src_trans_dst
         lambda_position, lambda_angle, lambda_s = 1e-3, 1e-3, 1e-2
 
         left_current_img = left_current_img.float()
@@ -194,7 +190,7 @@ class TestSpatialLoss(unittest.TestCase):
         left_position, right_position = left_position.float(), right_position.float()
         left_rotation, right_rotation = left_rotation.float(), right_rotation.float()
 
-        temporal_losses = TemporalPhotometricConsistencyLoss(left_camera_matrix, transfrom_from_left_to_right)
+        temporal_losses = TemporalPhotometricConsistencyLoss(left_camera_matrix, transform_from_left_to_right)
 
         out = temporal_losses(left_current_img, left_next_img, left_current_depth, left_next_depth)
 
