@@ -61,7 +61,7 @@ class LastUpBlock(nn.Module):
         return out
         
 class DepthNet(nn.Module):
-    def __init__(self, n_base_channels=32, max_depth=10):
+    def __init__(self, n_base_channels=32, max_depth=100):
         super().__init__()
 
         self.max_depth = max_depth
@@ -100,7 +100,7 @@ class DepthNet(nn.Module):
 
         out = self.last_up(out)
 
-        out = torch.sigmoid(out) * self.max_depth
+        out = torch.sigmoid(out) * self.max_depth # from monodepth2: out = 1 / ((-9.99 * torch.sigmoid(out)) + 10)
 
         return out
  
