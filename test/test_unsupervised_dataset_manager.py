@@ -27,23 +27,23 @@ class TestUnsupervisedDatasetManager(unittest.TestCase):
         self.assertEqual(len(dataset_manager.get_validation_dataset()), lengths[2])
         batches = dataset_manager.get_train_batches(20)
         for batch in batches:
-            self.assertEqual(batch["left_current_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["right_current_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["left_next_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["right_next_image"].shape, torch.Size([20, 3, 384, 128]))
+            self.assertEqual(batch["left_current_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["right_current_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["left_next_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["right_next_image"].shape, torch.Size([20, 3, 128, 384]))
             self.assertEqual(batch["right_next_image"].dtype, torch.float32)
             break
         batches = dataset_manager.get_validation_batches(20)
         for batch in batches:
-            self.assertEqual(batch["left_current_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["right_current_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["left_next_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["right_next_image"].shape, torch.Size([20, 3, 384, 128]))
+            self.assertEqual(batch["left_current_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["right_current_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["left_next_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["right_next_image"].shape, torch.Size([20, 3, 128, 384]))
             break
         batches = dataset_manager.get_test_batches(20)
         for batch in batches:
-            self.assertEqual(batch["left_current_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["right_current_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["left_next_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["right_next_image"].shape, torch.Size([20, 3, 384, 128]))
+            self.assertEqual(batch["left_current_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["right_current_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["left_next_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["right_next_image"].shape, torch.Size([20, 3, 128, 384]))
             break
