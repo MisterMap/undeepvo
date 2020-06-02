@@ -5,6 +5,7 @@ import torch
 
 from undeepvo.utils import Problem
 from undeepvo.utils.result_data_point import ResultDataPoint
+import numpy as np
 
 
 class UnsupervisedDepthProblem(Problem):
@@ -21,7 +22,7 @@ class UnsupervisedDepthProblem(Problem):
         self._model.train()
 
         # Forward
-        loss, spatial_photometric_loss, disparity_loss, pose_loss = self.evaluate_batch(batch)
+        loss, spatial_photometric_loss, disparity_loss, pose_loss, temporal_loss = self.evaluate_batch(batch)
 
         # Backward
         loss.backward()
@@ -29,22 +30,26 @@ class UnsupervisedDepthProblem(Problem):
         end_time = time.time()
         return {"loss": loss.item(), "time": end_time - start_time,
                 "spat_photo_loss": spatial_photometric_loss.item(), "disparity_loss": disparity_loss.item(),
-                "pose_loss": pose_loss.item()}
+                "pose_loss": pose_loss.item(),
+                "temporal_loss": temporal_loss.item()}
 
     def evaluate_batches(self, batches):
         self._model.eval()
         total_loss, total_spatial_photometric_loss, total_disparity_loss, total_pose_loss = 0, 0, 0, 0
+        total_temporal_loss = 0
         with torch.no_grad():
             for batch in batches:
-                loss, spatial_photometric_loss, disparity_loss, pose_loss = self.evaluate_batch(batch)
+                loss, spatial_photometric_loss, disparity_loss, pose_loss, temporal_loss = self.evaluate_batch(batch)
                 total_loss += loss.item()
                 total_disparity_loss += disparity_loss.item()
                 total_pose_loss += pose_loss.item()
                 total_spatial_photometric_loss += spatial_photometric_loss.item()
+                total_temporal_loss += temporal_loss.item()
         return {"loss": total_loss / len(batches),
                 "disparity_loss": total_disparity_loss / len(batches),
                 "pose_loss": total_pose_loss / len(batches),
-                "spat_photo_loss": total_spatial_photometric_loss / len(batches)}
+                "spat_photo_loss": total_spatial_photometric_loss / len(batches),
+                "temporal_loss": total_temporal_loss / len(batches)}
 
     def get_additional_data(self):
         return {"figures": self._get_depth_figure()}
@@ -57,8 +62,8 @@ class UnsupervisedDepthProblem(Problem):
         depth_image = depth_image[0].cpu().permute(1, 2, 0).detach().numpy()[:, :, 0]
         figure, axes = plt.subplots(2, 1, dpi=150)
         raw_image = image.cpu().permute(1, 2, 0).detach().numpy()
-        axes[0].imshow(raw_image)
+        axes[0].imshow(np.clip(raw_image, 0, 1))
         axes[0].set_title("Left current image")
-        axes[1].imshow(depth_image, cmap="inferno")
+        axes[1].imshow(np.clip(depth_image, 0, 10) / 10, cmap="inferno")
         axes[1].set_title("Left current depth")
         return {"depth": figure}

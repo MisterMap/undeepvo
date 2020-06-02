@@ -9,7 +9,7 @@ from .mflow_handler import MlFlowHandler
 
 class TrainingProcessHandler(object):
     def __init__(self, data_folder="logs", model_folder="model", enable_iteration_progress_bar=False,
-                 model_save_key="loss"):
+                 model_save_key="loss", mlflow_tags={}, mlflow_parameters={}):
         self._name = None
         self._epoch_count = 0
         self._iteration_count = 0
@@ -35,7 +35,7 @@ class TrainingProcessHandler(object):
         self._audio_configs = {}
         self._global_epoch_step = 0
         self._global_iteration_step = 0
-        self._mlflow_handler = MlFlowHandler()
+        self._mlflow_handler = MlFlowHandler(mlflow_tags=mlflow_tags, mlflow_parameters=mlflow_parameters)
 
     def setup_handler(self, name, model):
         self._name = name
@@ -80,7 +80,7 @@ class TrainingProcessHandler(object):
             torch.save(self._model.state_dict(), os.path.join(self._model_folder, f"{self._run_name}_checkpoint.pth"))
         self._current_epoch += 1
         self._global_epoch_step += 1
-        self._mlflow_handler.epoch_callback(metrics)
+        self._mlflow_handler.epoch_callback(metrics, self._current_epoch)
 
     def iteration_callback(self, metrics):
         for key, value in metrics.items():
