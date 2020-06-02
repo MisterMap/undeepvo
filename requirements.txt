@@ -6,11 +6,11 @@ matplotlib
 tqdm
 pillow
 torchvision
-torch
+torch>=1.5.0
 wget
 ipython
 pandas
 mlflow
 kornia
 albumentations==0.4.5
-tensorboard
+tensorboard>=1.14.0
