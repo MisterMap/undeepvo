@@ -90,4 +90,6 @@ class PoseNetResNet(nn.Module):
 
         out_rot = self.rot3(torch.relu(self.rot2(torch.relu(self.rot1(out)))))
         out_transl = self.transl3(torch.relu(self.transl2(torch.relu(self.transl1(out)))))
+        
+        return (out_rot, out_transl)
 
