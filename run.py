@@ -75,6 +75,12 @@ parser.add_argument('-lambda_position',
                     dest='lambda_position',
                     help='lambda_position loss value')
 
+parser.add_argument('-lr',
+                    default=0.0001,
+                    type=float,
+                    dest='lr',
+                    help='learning rate')
+
 args = parser.parse_args()
 
 MAIN_DIR = args.main_dir
@@ -90,7 +96,7 @@ criterion = UnsupervisedCriterion(dataset_manager.get_cameras_calibration("cuda:
 handler = TrainingProcessHandler(mlflow_tags={"name": args.mlflow_tags_name},
                                  mlflow_parameters={"image_step": args.frames_range[2], "max_depth": args.max_depth,
                                                     "epoch": args.epoch, "lambda_position": args.lambda_position, "lambda_rotation": args.lambda_rotation, "lambda_s": args.lambda_s, "lambda_disparity": args.lambda_disparity})
-optimizer_manger = OptimizerManager()
+optimizer_manger = OptimizerManager(lr=args.lr)
 problem = UnsupervisedDepthProblem(model, criterion, optimizer_manger, dataset_manager, handler,
                                    batch_size=5, name="undeepvo")
 problem.train(args.epoch)
