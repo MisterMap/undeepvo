@@ -14,6 +14,9 @@ class StereoDataset(Dataset):
     def get_image_size(self):
         return self._sequence.get_image_size()
 
+    def get_raw_sequence(self, index):
+        return self._sequence.get_sequence(index).get_data()
+
     def __getitem__(self, index):
         datapoint = self._sequence.get_sequence(index)
         if self._transform:

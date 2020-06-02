@@ -99,7 +99,7 @@ model = UnDeepVO(args.max_depth).cuda()
 
 criterion = UnsupervisedCriterion(dataset_manager.get_cameras_calibration("cuda:0"),
                                   args.lambda_position, args.lambda_rotation, args.lambda_s, args.lambda_disparity)
-handler = TrainingProcessHandler(enable_mlflow=False, mlflow_tags={"name": args.mlflow_tags_name},
+handler = TrainingProcessHandler(enable_mlflow=True, mlflow_tags={"name": args.mlflow_tags_name},
                                  mlflow_parameters={"image_step": args.frames_range[2], "max_depth": args.max_depth,
                                                     "epoch": args.epoch, "lambda_position": args.lambda_position, "lambda_rotation": args.lambda_rotation, "lambda_s": args.lambda_s, "lambda_disparity": args.lambda_disparity})
 optimizer_manger = OptimizerManager(lr=args.lr)
