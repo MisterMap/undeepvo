@@ -40,6 +40,8 @@ class MlFlowHandler(object):
     def start_callback(self, parameters):
         try:
             mlflow.set_experiment(self._experiment_name)
+            if mlflow.active_run() is not None:
+                mlflow.end_run()
             mlflow.start_run()
             mlflow.set_tags(self._mlflow_tags)
             mlflow.log_params(parameters)
