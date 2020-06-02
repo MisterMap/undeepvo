@@ -49,8 +49,8 @@ class Datapoint:
                 "image4": np.array(self._next_right)}
 
     def from_transform(self, dict_datapoint):
-        self._current_left = torch.from_numpy(dict_datapoint["image"]).permute(2, 1, 0)
-        self._current_right = torch.from_numpy(dict_datapoint["image2"]).permute(2, 1, 0)
-        self._next_left = torch.from_numpy(dict_datapoint["image3"]).permute(2, 1, 0)
-        self._next_right = torch.from_numpy(dict_datapoint["image4"]).permute(2, 1, 0)
+        self._current_left = torch.from_numpy(dict_datapoint["image"]).permute(2, 0, 1)
+        self._current_right = torch.from_numpy(dict_datapoint["image2"]).permute(2, 0, 1)
+        self._next_left = torch.from_numpy(dict_datapoint["image3"]).permute(2, 0, 1)
+        self._next_right = torch.from_numpy(dict_datapoint["image4"]).permute(2, 0, 1)
         return self

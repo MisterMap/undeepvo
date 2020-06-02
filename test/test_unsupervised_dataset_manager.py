@@ -27,23 +27,35 @@ class TestUnsupervisedDatasetManager(unittest.TestCase):
         self.assertEqual(len(dataset_manager.get_validation_dataset()), lengths[2])
         batches = dataset_manager.get_train_batches(20)
         for batch in batches:
-            self.assertEqual(batch["left_current_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["right_current_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["left_next_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["right_next_image"].shape, torch.Size([20, 3, 384, 128]))
+            self.assertEqual(batch["left_current_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["right_current_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["left_next_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["right_next_image"].shape, torch.Size([20, 3, 128, 384]))
             self.assertEqual(batch["right_next_image"].dtype, torch.float32)
             break
         batches = dataset_manager.get_validation_batches(20)
         for batch in batches:
-            self.assertEqual(batch["left_current_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["right_current_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["left_next_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["right_next_image"].shape, torch.Size([20, 3, 384, 128]))
+            self.assertEqual(batch["left_current_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["right_current_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["left_next_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["right_next_image"].shape, torch.Size([20, 3, 128, 384]))
             break
         batches = dataset_manager.get_test_batches(20)
         for batch in batches:
-            self.assertEqual(batch["left_current_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["right_current_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["left_next_image"].shape, torch.Size([20, 3, 384, 128]))
-            self.assertEqual(batch["right_next_image"].shape, torch.Size([20, 3, 384, 128]))
+            self.assertEqual(batch["left_current_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["right_current_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["left_next_image"].shape, torch.Size([20, 3, 128, 384]))
+            self.assertEqual(batch["right_next_image"].shape, torch.Size([20, 3, 128, 384]))
             break
+
+    def test_get_cameras_calibration(self):
+        sequence_8 = Downloader('08')
+        if not os.path.exists("./dataset/poses"):
+            print("Download dataset")
+            sequence_8.download_sequence()
+        lengths = (1, 1, 1)
+        dataset = pykitti.odometry(sequence_8.main_dir, sequence_8.sequence_id, frames=range(0, 3, 1))
+        dataset_manager = UnsupervisedDatasetManager(dataset, lenghts=lengths, num_workers=WORKERS_COUNT)
+        camera_calibration = dataset_manager.get_cameras_calibration()
+        self.assertEqual(camera_calibration.left_camera_matrix.shape, torch.Size([1, 3, 3]))
+        self.assertEqual(camera_calibration.right_camera_matrix.shape, torch.Size([1, 3, 3]))

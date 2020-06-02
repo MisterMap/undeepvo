@@ -23,7 +23,7 @@ class TemporalPhotometricConsistencyLoss(torch.nn.Module):
         current_position = current_position.unsqueeze(dim=2)
 
         current_transform_matrix = torch.cat((current_rot_matrix, current_position), dim=2)
-        tmp = torch.tensor([[0, 0, 0, 1]] * current_position.shape[0], dtype=torch.float)
+        tmp = torch.tensor([[0, 0, 0, 1]] * current_position.shape[0], dtype=torch.float).to(current_position.device)
         tmp = tmp.unsqueeze(dim=1)
         current_transform_matrix = torch.cat((current_transform_matrix, tmp), dim=1)
 
@@ -31,7 +31,7 @@ class TemporalPhotometricConsistencyLoss(torch.nn.Module):
 
         next_position = next_position.unsqueeze(dim=2)
         next_transform_matrix = torch.cat((next_rot_matrix, next_position), dim=2)
-        tmp = torch.tensor([[0, 0, 0, 1]] * next_position.shape[0], dtype=torch.float)
+        tmp = torch.tensor([[0, 0, 0, 1]] * next_position.shape[0], dtype=torch.float).to(current_position.device)
         tmp = tmp.unsqueeze(dim=1)
         next_transform_matrix = torch.cat((next_transform_matrix, tmp), dim=1)
 

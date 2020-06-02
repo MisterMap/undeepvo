@@ -9,7 +9,7 @@ from .temporal_photometric_consistency_loss import TemporalPhotometricConsistenc
 class SpatialLosses(torch.nn.Module):
     def __init__(self, camera_baseline, focal_length, left_camera_matrix, right_camera_matrix,
                  transform_from_left_to_right, lambda_position, lambda_angle,
-                 lambda_s=0.85, window_size=11, reduction: str = "mean", max_val: float = 1.0):
+                 lambda_s=0.85, lambda_disparity=0.85, window_size=11, reduction: str = "mean", max_val: float = 1.0):
         super().__init__()
         self.baseline = camera_baseline
         self.focal_length = focal_length
@@ -35,7 +35,7 @@ class SpatialLosses(torch.nn.Module):
                                                                               max_val=self.max_val)
         self.disparity_consistency_loss = DisparityConsistencyLoss(self.Bf, self.left_camera_matrix,
                                                                    self.right_camera_matrix,
-                                                                   self.transform_from_left_to_right)
+                                                                   self.transform_from_left_to_right, lambda_disparity)
         self.pose_loss = PoseLoss(self.lambda_position, self.lambda_angle)
 
     def forward(self, left_current_image, right_current_image,
