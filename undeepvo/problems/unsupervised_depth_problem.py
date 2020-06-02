@@ -56,7 +56,7 @@ class UnsupervisedDepthProblem(Problem):
 
     def _get_depth_figure(self):
         self._model.eval()
-        image = self._dataset_manager.get_validation_dataset()[5]["left_current_image"]
+        image = self._dataset_manager.get_validation_dataset()[0]["left_current_image"]
         with torch.no_grad():
             depth_image = self._model.depth(image[None].to(self._device))
         depth_image = depth_image[0].cpu().permute(1, 2, 0).detach().numpy()[:, :, 0]
