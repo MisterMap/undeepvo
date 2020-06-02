@@ -5,6 +5,10 @@ class ImageSequence:
     def __init__(self, dataset):
         self._length = len(list(dataset.rgb))
         self._dataset = dataset
+        self._img_size = self._dataset.get_rgb(0)[0].size[::-1]  # PIL Image size
+
+    def get_image_size(self):
+        return self._img_size
 
     def get_sequence(self, idx):
         idx = idx % (self._length - 1)  # idx = 12 % (13 - 1) = 0
