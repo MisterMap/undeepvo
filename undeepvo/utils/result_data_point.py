@@ -1,5 +1,4 @@
 import torch
-import torchvision
 
 
 class ResultDataPoint(object):
@@ -22,5 +21,5 @@ class ResultDataPoint(object):
         std = [0.229, 0.224, 0.225]
         mean = torch.as_tensor(mean, device=tensor.device)[None, :, None, None]
         std = torch.as_tensor(std, device=tensor.device)[None, :, None, None]
-        tensor.sub_(mean).div_(std)
+        tensor = tensor.sub(mean).div(std)
         return tensor
