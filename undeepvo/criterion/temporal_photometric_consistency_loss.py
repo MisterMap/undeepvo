@@ -55,26 +55,26 @@ class TemporalPhotometricConsistencyLoss(torch.nn.Module):
                 right_current_image, right_next_image, right_current_depth, right_next_depth,
                 left_current_position, right_current_position, left_current_angle, right_current_angle,
                 left_next_position, right_next_position, left_next_angle, right_next_angle):
-        self.left_transformation_from_previous_to_next = self.generate_transformation(left_current_position,
+        self.left_transformation_from_current_to_next = self.generate_transformation(left_current_position,
                                                                                       left_next_position,
                                                                                       left_current_angle,
                                                                                       left_next_angle)
-        self.inverse_left_transformation_from_previous_to_next = torch.inverse(
-            self.left_transformation_from_previous_to_next)
+        self.inverse_left_transformation_from_current_to_next = torch.inverse(
+            self.left_transformation_from_current_to_next)
 
-        self.right_transformation_from_previous_to_next = self.generate_transformation(right_current_position,
+        self.right_transformation_from_current_to_next = self.generate_transformation(right_current_position,
                                                                                        right_next_position,
                                                                                        right_current_angle,
                                                                                        right_next_angle)
-        self.inverse_right_transformation_from_previous_to_next = torch.inverse(
-            self.right_transformation_from_previous_to_next)
+        self.inverse_right_transformation_from_current_to_next = torch.inverse(
+            self.right_transformation_from_current_to_next)
 
         left_generated_next_image = self.generate_next_image(left_current_image, left_current_depth,
-                                                             self.left_transformation_from_previous_to_next,
+                                                             self.left_transformation_from_current_to_next,
                                                              self.left_camera_matrix)
 
         left_generated_current_image = self.generate_previous_image(left_next_image, left_next_depth,
-                                                                    self.inverse_left_transformation_from_previous_to_next,
+                                                                    self.inverse_left_transformation_from_current_to_next,
                                                                     self.left_camera_matrix)
 
         left_loss_current = self.lambda_s * self.ssim_loss(left_generated_current_image, left_current_image) + \
@@ -84,11 +84,11 @@ class TemporalPhotometricConsistencyLoss(torch.nn.Module):
                          (1 - self.lambda_s) * self.l1_loss(left_generated_next_image, left_next_image)
 
         right_generated_next_image = self.generate_next_image(right_current_image, right_current_depth,
-                                                              self.right_transformation_from_previous_to_next,
+                                                              self.right_transformation_from_current_to_next,
                                                               self.right_camera_matrix)
 
         right_generated_current_image = self.generate_previous_image(right_next_image, right_next_depth,
-                                                                     self.inverse_right_transformation_from_previous_to_next,
+                                                                     self.inverse_right_transformation_from_current_to_next,
                                                                      self.right_camera_matrix)
 
         right_loss_current = self.lambda_s * self.ssim_loss(right_generated_current_image, right_current_image) + \
