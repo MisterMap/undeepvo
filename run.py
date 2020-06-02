@@ -51,6 +51,42 @@ parser.add_argument('-max_depth',
                     dest='max_depth',
                     help='max_depth value')
 
+parser.add_argument('-lambda_disparity',
+                    default=0.01,
+                    type=float,
+                    dest='lambda_disparity',
+                    help='lambda_disparity loss value')
+
+parser.add_argument('-lambda_s',
+                    default=0.85,
+                    type=float,
+                    dest='lambda_s',
+                    help='lambda_s loss value')
+
+parser.add_argument('-lambda_rotation',
+                    default=0.1,
+                    type=float,
+                    dest='lambda_rotation',
+                    help='lambda_rotation loss value')
+
+parser.add_argument('-lambda_position',
+                    default=0.01,
+                    type=float,
+                    dest='lambda_position',
+                    help='lambda_position loss value')
+
+parser.add_argument('-lr',
+                    default=0.0001,
+                    type=float,
+                    dest='lr',
+                    help='learning rate')
+
+parser.add_argument('-batch',
+                    default=5,
+                    type=int,
+                    dest='batch',
+                    help='batch size')
+
 args = parser.parse_args()
 
 MAIN_DIR = args.main_dir
@@ -62,11 +98,13 @@ dataset_manager = UnsupervisedDatasetManager(dataset, lenghts=lengths)
 model = UnDeepVO(args.max_depth).cuda()
 
 criterion = UnsupervisedCriterion(dataset_manager.get_cameras_calibration("cuda:0"),
-                                  0.1, 1, 0.85)
+                                  args.lambda_position, args.lambda_rotation, args.lambda_s, args.lambda_disparity)
 handler = TrainingProcessHandler(mlflow_tags={"name": args.mlflow_tags_name},
                                  mlflow_parameters={"image_step": args.frames_range[2], "max_depth": args.max_depth,
-                                                    "epoch": args.epoch})
-optimizer_manger = OptimizerManager()
+                                                    "epoch": args.epoch, "lambda_position": args.lambda_position, "lambda_rotation": args.lambda_rotation, "lambda_s": args.lambda_s, "lambda_disparity": args.lambda_disparity})
+optimizer_manger = OptimizerManager(lr=args.lr)
 problem = UnsupervisedDepthProblem(model, criterion, optimizer_manger, dataset_manager, handler,
-                                   batch_size=5, name="undeepvo")
+                                   batch_size=args.batch, name="undeepvo")
 problem.train(args.epoch)
+
+
