@@ -81,6 +81,12 @@ parser.add_argument('-lr',
                     dest='lr',
                     help='learning rate')
 
+parser.add_argument('-batch',
+                    default=5,
+                    type=int,
+                    dest='batch',
+                    help='batch size')
+
 args = parser.parse_args()
 
 MAIN_DIR = args.main_dir
@@ -98,7 +104,7 @@ handler = TrainingProcessHandler(mlflow_tags={"name": args.mlflow_tags_name},
                                                     "epoch": args.epoch, "lambda_position": args.lambda_position, "lambda_rotation": args.lambda_rotation, "lambda_s": args.lambda_s, "lambda_disparity": args.lambda_disparity})
 optimizer_manger = OptimizerManager(lr=args.lr)
 problem = UnsupervisedDepthProblem(model, criterion, optimizer_manger, dataset_manager, handler,
-                                   batch_size=5, name="undeepvo")
+                                   batch_size=args.batch, name="undeepvo")
 problem.train(args.epoch)
 
 
