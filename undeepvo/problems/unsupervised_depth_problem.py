@@ -1,11 +1,11 @@
 import time
 
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
 
 from undeepvo.utils import Problem
 from undeepvo.utils.result_data_point import ResultDataPoint
-import numpy as np
 
 
 class UnsupervisedDepthProblem(Problem):
