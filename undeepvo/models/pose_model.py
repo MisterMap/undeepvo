@@ -86,7 +86,6 @@ class PoseNetResNet(nn.Module):
 
         x = self.resnet_part(x)
         out = self.flatten(x)
-        print(out.shape)
 
         out_rot = self.rot3(torch.relu(self.rot2(torch.relu(self.rot1(out)))))
         out_transl = self.transl3(torch.relu(self.transl2(torch.relu(self.transl1(out)))))
