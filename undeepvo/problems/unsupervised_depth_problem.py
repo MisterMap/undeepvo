@@ -2,12 +2,12 @@ import time
 
 import albumentations
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
 
 from undeepvo.data.datatransform_manager import DataTransformManager
 from undeepvo.utils import Problem
 from undeepvo.utils.result_data_point import ResultDataPoint
-import numpy as np
 
 
 class UnsupervisedDepthProblem(Problem):

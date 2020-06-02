@@ -40,6 +40,8 @@ class MlFlowHandler(object):
     def start_callback(self, parameters):
         try:
             mlflow.set_experiment(self._experiment_name)
+            if mlflow.active_run() is not None:
+                mlflow.end_run()
             mlflow.start_run()
             mlflow.set_tags(self._mlflow_tags)
             mlflow.log_params(parameters)
@@ -60,14 +62,16 @@ class MlFlowHandler(object):
             print(f"[WARNING][MlFlowHandler] - [FinishCallback] {msg}")
             print(f"[WARNING][MlFlowHandler] - [FinishCallback] mlflow is disabled")
 
-    def epoch_callback(self, metrics, current_epoch=0):
+    def epoch_callback(self, metrics, current_epoch=0, artifacts=None):
         if not self._enable_mlflow:
             return
         try:
             metrics["epoch"] = current_epoch
             mlflow.log_metrics(metrics, current_epoch)
-            mlflow.log_artifact(f"img_{current_epoch-1}.png")
-            os.remove(f"img_{current_epoch-1}.png")
+            if artifacts is not None:
+                for artifact in artifacts:
+                    mlflow.log_artifact(artifact)
+                    os.remove(artifact)
         except mlflow.exceptions.MlflowException as msg:
             self._enable_mlflow = False
             print(f"[WARNING][MlFlowHandler] - [EpochCallback] {msg}")

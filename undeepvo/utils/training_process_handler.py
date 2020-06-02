@@ -9,7 +9,11 @@ from .mflow_handler import MlFlowHandler
 
 class TrainingProcessHandler(object):
     def __init__(self, data_folder="logs", model_folder="model", enable_iteration_progress_bar=False,
-                 model_save_key="loss", mlflow_tags={}, mlflow_parameters={}, enable_mlflow=True):
+                 model_save_key="loss", mlflow_tags=None, mlflow_parameters=None, enable_mlflow=True):
+        if mlflow_tags is None:
+            mlflow_tags = {}
+        if mlflow_parameters is None:
+            mlflow_parameters = {}
         self._name = None
         self._epoch_count = 0
         self._iteration_count = 0
@@ -39,6 +43,8 @@ class TrainingProcessHandler(object):
             self._mlflow_handler = MlFlowHandler(mlflow_tags=mlflow_tags, mlflow_parameters=mlflow_parameters)
         else:
             self._mlflow_handler = None
+        self._artifacts = []
+
 
     def setup_handler(self, name, model):
         self._name = name
@@ -65,6 +71,7 @@ class TrainingProcessHandler(object):
             self._mlflow_handler.start_callback(parameters)
 
     def epoch_callback(self, metrics, image_batches=None, figures=None, audios=None, texts=None):
+        self._artifacts = []
         for key, value in metrics.items():
             self.validation_history.setdefault(key, []).append(value)
         self._write_epoch_metrics(metrics)
@@ -85,7 +92,7 @@ class TrainingProcessHandler(object):
         self._current_epoch += 1
         self._global_epoch_step += 1
         if self._mlflow_handler is not None:
-            self._mlflow_handler.epoch_callback(metrics, self._current_epoch)
+            self._mlflow_handler.epoch_callback(metrics, self._current_epoch, self._artifacts)
 
     def iteration_callback(self, metrics):
         for key, value in metrics.items():
@@ -140,7 +147,9 @@ class TrainingProcessHandler(object):
     def _write_figures(self, figures):
         for key, value in figures.items():
             self._writer.add_figure(key, value, self._global_epoch_step)
-            value.savefig(f"img_{self._global_epoch_step}.png")
+            artifact_name = f"{self._log_folder}/{key}_{self._global_epoch_step}.png"
+            value.savefig(artifact_name)
+            self._artifacts.append(artifact_name)
 
     def _write_audios(self, audios):
         for key, value in audios.items():
