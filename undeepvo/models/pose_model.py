@@ -70,15 +70,15 @@ class PoseNetResNet(nn.Module):
     def __init__(self, n_base_channels=16, pretrained=True):
         super(PoseNetResNet, self).__init__()
 
-        self.resnet_part = nn.Sequential(*list(models.resnet50(pretrained=pretrained).children())[:-2])
+        self.resnet_part = nn.Sequential(*list(models.resnet18(pretrained=pretrained).children())[:-2])
 
         self.flatten = nn.Flatten()
 
-        self.rot1 = nn.Linear(131072, 512)
+        self.rot1 = nn.Linear(32768, 512)
         self.rot2 = nn.Linear(512, 512)
         self.rot3 = nn.Linear(512, 3)
 
-        self.transl1 = nn.Linear(131072, 512)
+        self.transl1 = nn.Linear(32768, 512)
         self.transl2 = nn.Linear(512, 512)
         self.transl3 = nn.Linear(512, 3)
 
