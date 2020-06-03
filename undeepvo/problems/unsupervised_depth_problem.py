@@ -1,9 +1,11 @@
 import time
 
+import albumentations
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
+from undeepvo.data.datatransform_manager import DataTransformManager
 from undeepvo.utils import Problem
 from undeepvo.utils.result_data_point import ResultDataPoint
 
@@ -56,14 +58,16 @@ class UnsupervisedDepthProblem(Problem):
 
     def _get_depth_figure(self):
         self._model.eval()
-        image = self._dataset_manager.get_validation_dataset()[5]["left_current_image"]
+        image = self._dataset_manager.get_validation_dataset(with_normalize=True)[0]["left_current_image"]
         with torch.no_grad():
             depth_image = self._model.depth(image[None].to(self._device))
         depth_image = depth_image[0].cpu().permute(1, 2, 0).detach().numpy()[:, :, 0]
         figure, axes = plt.subplots(2, 1, dpi=150)
+        image = self._dataset_manager.get_validation_dataset(with_normalize=False)[0]["left_current_image"]
         raw_image = image.cpu().permute(1, 2, 0).detach().numpy()
         axes[0].imshow(np.clip(raw_image, 0, 1))
         axes[0].set_title("Left current image")
         axes[1].imshow(np.clip(depth_image, 0, 100) / 100, cmap="inferno")
         axes[1].set_title("Left current depth")
+        figure.tight_layout()
         return {"depth": figure}
