@@ -1,9 +1,8 @@
 import numpy as np
-from PIL import Image
 import torch
 
 
-class Datapoint:
+class ImageDataPoint:
     def __init__(self, current_pair, next_pair):
         self._current_left_name = "left_current_image"  # rename
         self._current_right_name = "right_current_image"
