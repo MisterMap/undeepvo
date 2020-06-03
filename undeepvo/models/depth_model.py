@@ -103,7 +103,7 @@ class DepthNet(nn.Module):
 
         out = self.last_up(out)
 
-        # from monodepth2: out = 1 / ((-9.99 * torch.sigmoid(out)) + 10)
-        out = self.min_depth + torch.sigmoid(out) * (self.max_depth - self.min_depth)
+        #out = self.min_depth + torch.sigmoid(out) * (self.max_depth - self.min_depth)
+        out = 1 / ((-9.99 * torch.sigmoid(out)) + 10) # from monodepth2
 
         return out
