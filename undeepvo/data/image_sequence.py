@@ -1,4 +1,4 @@
-from .datapoint import Datapoint
+from .image_data_point import ImageDataPoint
 
 
 class ImageSequence:
@@ -12,7 +12,7 @@ class ImageSequence:
 
     def get_sequence(self, idx):
         idx = idx % (self._length - 1)  # idx = 12 % (13 - 1) = 0
-        return Datapoint(self._dataset.get_rgb(idx), self._dataset.get_rgb(idx + 1))
+        return ImageDataPoint(self._dataset.get_rgb(idx), self._dataset.get_rgb(idx + 1))
 
     def get_length(self):
         return self._length
