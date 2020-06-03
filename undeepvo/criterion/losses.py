@@ -9,7 +9,7 @@ from .temporal_photometric_consistency_loss import TemporalPhotometricConsistenc
 class SpatialLosses(torch.nn.Module):
     def __init__(self, camera_baseline, focal_length, left_camera_matrix, right_camera_matrix,
                  transform_from_left_to_right, lambda_position, lambda_angle,
-                 lambda_s=0.85, window_size=11, reduction: str = "mean", max_val: float = 1.0):
+                 lambda_s=0.85, lambda_disparity=0.85, window_size=11, reduction: str = "mean", max_val: float = 1.0):
         super().__init__()
         self.baseline = camera_baseline
         self.focal_length = focal_length
@@ -35,7 +35,7 @@ class SpatialLosses(torch.nn.Module):
                                                                               max_val=self.max_val)
         self.disparity_consistency_loss = DisparityConsistencyLoss(self.Bf, self.left_camera_matrix,
                                                                    self.right_camera_matrix,
-                                                                   self.transform_from_left_to_right)
+                                                                   self.transform_from_left_to_right, lambda_disparity)
         self.pose_loss = PoseLoss(self.lambda_position, self.lambda_angle)
 
     def forward(self, left_current_image, right_current_image,
@@ -50,18 +50,36 @@ class SpatialLosses(torch.nn.Module):
 
 
 class TemporalImageLosses(torch.nn.Module):
-    def __init__(self, camera_matrix, transformation_matrix, lambda_s=0.85):
+    def __init__(self, left_camera_matrix, right_camera_matrix,
+                 lambda_s=0.85):
         super().__init__()
-        self.camera_matrix = camera_matrix
-        self.transformation_matrix = transformation_matrix
+        self.left_camera_matrix = left_camera_matrix
+        self.right_camera_matrix = right_camera_matrix
+
         self.lambda_s = lambda_s
 
-        # self.geometric_registration_loss = ThreeDGeometricRegistrationLoss(self.transformation_matrix)
-        self.photometric_consistency_loss = TemporalPhotometricConsistencyLoss(self.camera_matrix,
-                                                                               self.transformation_matrix,
-                                                                               self.lambda_s)
+        self.temporal_photometric_consistency_loss = TemporalPhotometricConsistencyLoss(self.left_camera_matrix,
+                                                                                        self.right_camera_matrix,
+                                                                                        self.lambda_s)
 
-    def forward(self, image_previous, depth_previous, image_next, depth_next, point_cloud_previous, point_cloud_next,
-                regularization):
-        # self.geometric_registration_loss(point_cloud_previous, point_cloud_next)
-        self.photometric_consistency_loss(image_previous, image_next, depth_previous, depth_next, regularization)
+    def forward(self, left_current_image, left_next_image, left_current_depth, left_next_depth,
+                right_current_image, right_next_image, right_current_depth, right_next_depth,
+                left_current_position, right_current_position, left_current_angle, right_current_angle,
+                left_next_position, right_next_position, left_next_angle, right_next_angle):
+        temporal_photometric_consistency_loss = self.temporal_photometric_consistency_loss(left_current_image,
+                                                                                           left_next_image,
+                                                                                           left_current_depth,
+                                                                                           left_next_depth,
+                                                                                           right_current_image,
+                                                                                           right_next_image,
+                                                                                           right_current_depth,
+                                                                                           right_next_depth,
+                                                                                           left_current_position,
+                                                                                           right_current_position,
+                                                                                           left_current_angle,
+                                                                                           right_current_angle,
+                                                                                           left_next_position,
+                                                                                           right_next_position,
+                                                                                           left_next_angle,
+                                                                                           right_next_angle)
+        return temporal_photometric_consistency_loss
