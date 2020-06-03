@@ -99,36 +99,36 @@ class LastUpBlock(nn.Module):
 
 
 class DepthNet(nn.Module):
-    def __init__(self, n_base_channels=32, max_depth=100, min_depth=0.5):
+    def __init__(self, n_base_channels=32, max_depth=None, min_depth=None):
         super().__init__()
 
         self.max_depth = max_depth
         self.min_depth = min_depth
+        
         self.down_blocks = nn.ModuleList([
-            UnetDownBlock(3, n_base_channels, kernel_size=7),  # 32 out
-            UnetDownBlock(n_base_channels, n_base_channels * 2, kernel_size=5),  # 64
-            UnetDownBlock(n_base_channels * 2, n_base_channels * 4),  # 128
-            UnetDownBlock(n_base_channels * 4, n_base_channels * 8),  # 256
+            UnetDownBlock(3, n_base_channels, kernel_size=7), # 32 out
+            UnetDownBlock(n_base_channels, n_base_channels * 2, kernel_size=5), # 64
+            UnetDownBlock(n_base_channels * 2, n_base_channels * 4), # 128
+            UnetDownBlock(n_base_channels * 4, n_base_channels * 8), # 256
             UnetDownBlock(n_base_channels * 8, n_base_channels * 16),  # 512
             UnetDownBlock(n_base_channels * 16, n_base_channels * 16),  # 512
-            UnetDownBlock(n_base_channels * 16, n_base_channels * 16)  # 512
+             UnetDownBlock(n_base_channels * 16, n_base_channels * 16)  # 512
         ])
         self.up_blocks = nn.ModuleList([
-            UnetUpBlock(n_base_channels * 16, n_base_channels * 16),  # 512 out
-            UnetUpBlock(n_base_channels * 16, n_base_channels * 8),  # 256
-            UnetUpBlock(n_base_channels * 8, n_base_channels * 4),  # 128
-            UnetUpBlock(n_base_channels * 4, n_base_channels * 2),  # 64
-            UnetUpBlock(n_base_channels * 2, n_base_channels),  # 32
-            UnetUpBlock(n_base_channels, n_base_channels // 2),  # 16
+            UnetUpBlock(n_base_channels * 16, n_base_channels * 16), # 512 out
+            UnetUpBlock(n_base_channels * 16, n_base_channels * 8), # 256 
+            UnetUpBlock(n_base_channels * 8, n_base_channels * 4), # 128
+            UnetUpBlock(n_base_channels * 4, n_base_channels * 2), # 64 
+            UnetUpBlock(n_base_channels * 2, n_base_channels), # 32 
+            UnetUpBlock(n_base_channels, n_base_channels // 2), # 32
         ])
 
         self.last_up = LastUpBlock(n_base_channels // 2, 1)
-
+              
     def forward(self, x):
 
         out = x
         outputs_before_pooling = []
-        before_pooling = None
         for (i, block) in enumerate(self.down_blocks):
             (out, before_pooling) = block(out)
             outputs_before_pooling.append(before_pooling)
@@ -139,8 +139,10 @@ class DepthNet(nn.Module):
 
         out = self.last_up(out)
 
-        # from monodepth2: out = 1 / ((-9.99 * torch.sigmoid(out)) + 10)
-        out = self.min_depth + torch.sigmoid(out) * (self.max_depth - self.min_depth)
+        if (self.max_depth != None) and (self.min_depth != None):
+            out = self.min_depth + torch.sigmoid(out) * (self.max_depth - self.min_depth) 
+        else:
+            out = 1 / ((-9.99 * torch.sigmoid(out)) + 10) # from monodepth2
 
         return out
     
