@@ -28,7 +28,6 @@ class DataTransformManager:
             self._train_compose.append(albumentations.Normalize())
         else:
             self._train_compose.append(albumentations.Normalize(mean=(0, 0, 0), std=(1, 1, 1)))
-        print(self._train_compose)
 
     def get_train_transform(self):
         return albumentations.Compose(self._train_compose, additional_targets=self.custom_additional_targets)
