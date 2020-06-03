@@ -1,9 +1,8 @@
 import numpy as np
-from PIL import Image
 import torch
 
 
-class Datapoint:
+class ImageDataPoint:
     def __init__(self, current_pair, next_pair):
         self._current_left_name = "left_current_image"  # rename
         self._current_right_name = "right_current_image"
@@ -22,10 +21,10 @@ class Datapoint:
         return {self._current_right_name: self._current_right}
 
     def get_next_left(self):
-        return {self._next_left_name: self._current_left}
+        return {self._next_left_name: self._next_left}
 
     def get_next_right(self):
-        return {self._next_right_name: self._current_right}
+        return {self._next_right_name: self._next_right}
 
     def get_left(self):
         return {**self.get_current_left(), **self.get_next_left()}
