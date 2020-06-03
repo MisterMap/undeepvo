@@ -75,6 +75,6 @@ class TestUnsupervisedDatasetManager(unittest.TestCase):
         dataset = pykitti.odometry(sequence_8.main_dir, sequence_8.sequence_id, frames=range(0, 3, 1))
         dataset_manager = UnsupervisedDatasetManager(dataset, lenghts=lengths, num_workers=WORKERS_COUNT)
         camera_calibration = dataset_manager.get_cameras_calibration()
-        self.assertEqual(camera_calibration.camera_matrix.shape, torch.Size([1, 3, 3]))
+        self.assertEqual(camera_calibration.left_camera_matrix.shape, torch.Size([1, 3, 3]))
         self.assertEqual(camera_calibration.right_camera_matrix.shape, torch.Size([1, 3, 3]))
 # TODO for poses

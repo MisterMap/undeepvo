@@ -21,10 +21,10 @@ class ImageDataPoint:
         return {self._current_right_name: self._current_right}
 
     def get_next_left(self):
-        return {self._next_left_name: self._current_left}
+        return {self._next_left_name: self._next_left}
 
     def get_next_right(self):
-        return {self._next_right_name: self._current_right}
+        return {self._next_right_name: self._next_right}
 
     def get_left(self):
         return {**self.get_current_left(), **self.get_next_left()}
