@@ -1,6 +1,5 @@
 import unittest
 
-import kornia
 import numpy as np
 import torch
 import torchvision
@@ -121,9 +120,6 @@ class TestLosses(unittest.TestCase):
         self.assertFalse(torch.isnan(out))
         self.assertTrue(out > 0)
 
-
-
-
     def test_temporal_loss(self):
         model = UnDeepVO().to(device)
 
@@ -143,7 +139,8 @@ class TestLosses(unittest.TestCase):
 
         out = temporal_losses(left_current_img, left_next_img, left_current_depth, left_next_depth,
                               right_current_img, right_next_img, right_current_depth, right_next_depth,
-                              left_current_position, right_current_position, left_current_rotation, right_current_rotation,
+                              left_current_position, right_current_position, left_current_rotation,
+                              right_current_rotation,
                               left_next_position, right_next_position, left_next_rotation, right_next_rotation
                               )
 
