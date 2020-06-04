@@ -90,7 +90,7 @@ class UnsupervisedDepthProblem(Problem):
                                                             cameras_calibration.transform_from_left_to_right,
                                                             cameras_calibration.left_camera_matrix)
 
-        figure = plt.figure(dpi=200, figsize=(12, 6))
+        figure = plt.figure(dpi=200, figsize=(9, 6))
 
         plt.subplot(3, 2, 1)
         image = left_current_image[0].cpu().permute(1, 2, 0).detach().numpy()
