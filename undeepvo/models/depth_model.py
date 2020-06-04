@@ -99,13 +99,13 @@ class LastUpBlock(nn.Module):
 
 
 class DepthNet(nn.Module):
-    def __init__(self, n_base_channels=32, max_depth=None, min_depth=None, last_sigmoid=True):
+    def __init__(self, n_base_channels=32, max_depth=None, min_depth=None, sigmoid=False):
         super().__init__()
 
         self.max_depth = max_depth
         self.min_depth = min_depth
-        self.last_sigmoid = last_sigmoid
-        
+        self.sigmoid = sigmoid
+
         self.down_blocks = nn.ModuleList([
             UnetDownBlock(3, n_base_channels, kernel_size=7), # 32 out
             UnetDownBlock(n_base_channels, n_base_channels * 2, kernel_size=5), # 64
@@ -142,7 +142,7 @@ class DepthNet(nn.Module):
         out = self.last_up(out)
         out = self._last_conv(out)
         if (self.max_depth != None) and (self.min_depth != None):
-            if self.last_sigmoid:
+            if self.sigmoid:
                 out = self.min_depth + torch.sigmoid(out) * (self.max_depth - self.min_depth)
             else:
                 out = self.min_depth + (out + 1) * (self.max_depth - self.min_depth) / 2.
@@ -154,11 +154,12 @@ class DepthNet(nn.Module):
     
     
 class DepthNetResNet(nn.Module):
-    def __init__(self, n_base_channels=32, max_depth=None, min_depth=None, pretrained=True):
+    def __init__(self, n_base_channels=32, max_depth=None, min_depth=None, pretrained=True, sigmoid=False):
         super().__init__()
 
         self.max_depth = max_depth
         self.min_depth = min_depth
+        self.sigmoid = sigmoid
 
         self.skip_zero = nn.Conv2d(3, n_base_channels * 2, kernel_size=1, padding=0)
         self.resnet_part = list(models.resnet18(pretrained=pretrained).children())
