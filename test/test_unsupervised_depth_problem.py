@@ -33,10 +33,10 @@ class DatasetManagerMock(UnsupervisedDatasetManager):
     def get_train_batches(self, batch_size):
         return DataLoaderMock(super(DatasetManagerMock, self).get_train_batches(batch_size))
 
-    def get_validation_batches(self, batch_size):
+    def get_validation_batches(self, batch_size, **_):
         return DataLoaderMock(super(DatasetManagerMock, self).get_validation_batches(batch_size))
 
-    def get_test_batches(self, batch_size):
+    def get_test_batches(self, batch_size, **_):
         return DataLoaderMock(super(DatasetManagerMock, self).get_test_batches(batch_size))
 
 
