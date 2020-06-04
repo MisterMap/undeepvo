@@ -19,8 +19,11 @@ class TestSupervisedDatasetManager(unittest.TestCase):
         lengths = (200, 30, 30)
         dataset_manager = SupervisedDatasetManager(dataset, lenghts=lengths, num_workers=WORKERS_COUNT)
         self.assertEqual(len(dataset_manager.get_train_dataset()), lengths[0])
-        self.assertEqual(len(dataset_manager.get_test_dataset()), lengths[1])
-        self.assertEqual(len(dataset_manager.get_validation_dataset()), lengths[2])
+        self.assertEqual(len(dataset_manager.get_validation_dataset()), lengths[1])
+        self.assertEqual(len(dataset_manager.get_test_dataset()), lengths[2])
+        image, depth = dataset_manager.get_validation_dataset(with_normalize=True)[0]
+        self.assertEqual(image.shape, torch.Size([3, 128, 384]))
+        self.assertEqual(depth.shape, torch.Size([1, 128, 384]))
         batches = dataset_manager.get_train_batches(20)
         for X, y in batches:
             self.assertEqual(X.shape, torch.Size([20, 3, 128, 384]))
