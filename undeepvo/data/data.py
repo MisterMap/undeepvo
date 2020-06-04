@@ -1,6 +1,7 @@
 import os
 from google_drive_downloader import GoogleDriveDownloader as gdd
 
+
 class Downloader(object):
     def __init__(self, sequence_id='08', main_dir='dataset'):
         self.sequence_id = sequence_id
@@ -22,13 +23,15 @@ class Downloader(object):
             os.remove(os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib.txt'))
             if os.path.exists(os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib1.txt')):
                 os.rename(os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib1.txt'),
-                  os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib.txt'))
+                          os.path.join(os.curdir, self.main_dir, 'sequences', self.sequence_id, 'calib.txt'))
         self.clean_space()
 
     def clean_space(self):
         os.remove(self.sequence.calib.name)
         os.remove(self.sequence.poses.name)
         os.remove(self.sequence.images.name)
+
+
 class Sequence(object):
     def __init__(self, sequence_id='08', main_dir='dataset'):
         self.sequence_id = sequence_id
