@@ -99,11 +99,12 @@ class LastUpBlock(nn.Module):
 
 
 class DepthNet(nn.Module):
-    def __init__(self, n_base_channels=32, max_depth=None, min_depth=None):
+    def __init__(self, n_base_channels=32, max_depth=None, min_depth=None, last_sigmoid=True):
         super().__init__()
 
         self.max_depth = max_depth
         self.min_depth = min_depth
+        self.last_sigmoid = last_sigmoid
         
         self.down_blocks = nn.ModuleList([
             UnetDownBlock(3, n_base_channels, kernel_size=7), # 32 out
@@ -140,7 +141,11 @@ class DepthNet(nn.Module):
         out = self.last_up(out)
 
         if (self.max_depth != None) and (self.min_depth != None):
-            out = self.min_depth + torch.sigmoid(out) * (self.max_depth - self.min_depth) 
+            if self.last_sigmoid:
+                out = self.min_depth + torch.sigmoid(out) * (self.max_depth - self.min_depth)
+            else:
+                out = self.min_depth + out * (self.max_depth - self.min_depth)
+                out = torch.clamp(out, self.min_depth, self.max_depth)
         else:
             out = 1 / ((-9.99 * torch.sigmoid(out)) + 10) # from monodepth2
 

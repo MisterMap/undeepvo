@@ -6,11 +6,11 @@ from .utils import init_weights
 
 
 class UnDeepVO(nn.Module):
-    def __init__(self, max_depth=None, min_depth=None, resnet=False):
+    def __init__(self, max_depth=None, min_depth=None, resnet=False, last_sigmoid=True):
         super(UnDeepVO, self).__init__()
         
         if resnet == False:
-            self.depth_net = DepthNet(max_depth=max_depth, min_depth=min_depth)
+            self.depth_net = DepthNet(max_depth=max_depth, min_depth=min_depth, last_sigmoid=last_sigmoid)
             self.pose_net = PoseNet()
             self.apply(init_weights)
         else:
