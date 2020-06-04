@@ -42,6 +42,7 @@ class DatasetManagerMock(SupervisedDatasetManager):
 class TestSupervisedDepthProblem(unittest.TestCase):
     def test_supervised_depth_problem(self):
         dataset = GroundTruthDataset(length=260)
+        print (dataset._names)
         lengths = (200, 30, 30)
         dataset_manager = SupervisedDatasetManager(dataset, lenghts=lengths, num_workers=WORKERS_COUNT)
         model = DepthNet(max_depth=2., min_depth=1.0).cuda()

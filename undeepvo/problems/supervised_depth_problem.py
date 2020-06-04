@@ -39,13 +39,13 @@ class SupervisedDepthProblem(Problem):
 
     def _get_figures(self):
         self._model.eval()
-        image = self._dataset_manager.get_validation_dataset(with_normalize=True)[0]["image"]
-        depth = self._dataset_manager.get_validation_dataset(with_normalize=True)[0]["depth"]
+        image = self._dataset_manager.get_validation_dataset(with_normalize=True)[0][0]
+        depth = self._dataset_manager.get_validation_dataset(with_normalize=True)[0][1]
         with torch.no_grad():
             depth_model = self._model.depth(image[None].to(self._device))
         depth_model = depth_model[0].cpu().permute(1, 2, 0).detach().numpy()[:, :, 0]
         figure, axes = plt.subplots(2, 1, dpi=150)
-        image = self._dataset_manager.get_validation_dataset(with_normalize=False)[0]["image"]
+        image = self._dataset_manager.get_validation_dataset(with_normalize=False)[0][0]
         raw_image = image.cpu().permute(1, 2, 0).detach().numpy()
         self._fill_in_axis(axes[0], raw_image, "image")
         self._fill_in_axis(axes[1], depth, "ground_truth_depth", depth=True)
