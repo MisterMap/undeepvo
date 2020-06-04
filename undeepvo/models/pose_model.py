@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from torchvision import models
         
 class PoseNet(nn.Module):
     def __init__(self, n_base_channels=16):
@@ -64,3 +65,32 @@ class VggBlock(nn.Module):
         out = self.conv(x)
         
         return out
+
+class PoseNetResNet(nn.Module):
+    def __init__(self, n_base_channels=16, pretrained=True):
+        super(PoseNetResNet, self).__init__()
+
+        self.resnet_part = nn.Sequential(*list(models.resnet18(pretrained=pretrained).children())[:-2])
+
+        self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
+        self.flatten = nn.Flatten()
+
+        self.rot1 = nn.Linear(512 * 6 * 6, 512)
+        self.rot2 = nn.Linear(512, 512)
+        self.rot3 = nn.Linear(512, 3)
+
+        self.transl1 = nn.Linear(512 * 6 * 6, 512)
+        self.transl2 = nn.Linear(512, 512)
+        self.transl3 = nn.Linear(512, 3)
+
+    def forward(self, x):
+
+        x = self.resnet_part(x)
+        x = self.avgpool(x)
+        out = self.flatten(x)
+
+        out_rot = self.rot3(torch.relu(self.rot2(torch.relu(self.rot1(out)))))
+        out_transl = self.transl3(torch.relu(self.transl2(torch.relu(self.transl1(out)))))
+
+        return (out_rot, out_transl)
+
