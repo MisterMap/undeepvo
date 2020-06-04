@@ -124,7 +124,8 @@ class DepthNet(nn.Module):
             UnetUpBlock(n_base_channels, n_base_channels // 2), # 32
         ])
 
-        self.last_up = LastUpBlock(n_base_channels // 2, 1)
+        self.last_up = LastUpBlock(n_base_channels // 2, 32)
+        self._last_conv = nn.Conv2d(32, 1, 1)
               
     def forward(self, x):
 
@@ -139,7 +140,7 @@ class DepthNet(nn.Module):
             out = block(out, outputs_before_pooling[-i - 2])
 
         out = self.last_up(out)
-
+        out = self._last_conv(out)
         if (self.max_depth != None) and (self.min_depth != None):
             if self.last_sigmoid:
                 out = self.min_depth + torch.sigmoid(out) * (self.max_depth - self.min_depth)
@@ -187,7 +188,7 @@ class DepthNetResNet(nn.Module):
             UnetUpBlockResNet(n_base_channels * 2 + n_base_channels * 8, n_base_channels * 4), # 64 + 256 --- 128 
             UnetUpBlockResNet(n_base_channels * 2 + n_base_channels * 4, 32) # 64 + 128 --- 1
         ])
-        self._last_conv = nn.Conv2d(32, 1, 1)
+
         # possible option
         # self.upsample = nn.ConvTranspose2d(n_base_channels * 4, n_base_channels * 4, 3, stride=2, padding=1) # nn.Upsample(scale_factor=2)
         # self.last_up = LastUpBlock(n_base_channels * 4, 1)
@@ -216,7 +217,7 @@ class DepthNetResNet(nn.Module):
 
         for (i, block) in enumerate(self.up_blocks):
             out = block(out, outputs_before_pooling[-i - 2])
-        out = self._last_conv(out)
+
         if (self.max_depth != None) and (self.min_depth != None):
             out = self.min_depth + torch.sigmoid(out) * (self.max_depth - self.min_depth) 
         else:
