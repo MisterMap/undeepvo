@@ -55,7 +55,6 @@ class TestLosses(unittest.TestCase):
 
         left_next_depth = model.depth(left_next_img).to(device)
         right_next_depth = model.depth(right_next_img).to(device)
-        print(left_next_depth[0, 0, 50])
         left_current_rotation, left_current_position = model.pose(left_current_img)
         right_current_rotation, right_current_position = model.pose(right_current_img)
 
@@ -137,7 +136,7 @@ class TestLosses(unittest.TestCase):
 
         temporal_losses = TemporalImageLosses(left_camera_matrix, right_camera_matrix)
 
-        out = temporal_losses(left_current_img, left_next_img, left_current_depth, left_next_depth,
+        out, _ = temporal_losses(left_current_img, left_next_img, left_current_depth, left_next_depth,
                               right_current_img, right_next_img, right_current_depth, right_next_depth,
                               left_current_position, right_current_position, left_current_rotation,
                               right_current_rotation,

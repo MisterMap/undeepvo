@@ -2,6 +2,7 @@ import torch
 
 from .disparity_consistency_loss import DisparityConsistencyLoss
 from .pose_loss import PoseLoss
+from .registration_loss import GeometricRegistrationLoss
 from .spatial_photometric_consistency_loss import SpatialPhotometricConsistencyLoss
 from .temporal_photometric_consistency_loss import TemporalPhotometricConsistencyLoss
 
@@ -51,7 +52,7 @@ class SpatialLosses(torch.nn.Module):
 
 class TemporalImageLosses(torch.nn.Module):
     def __init__(self, left_camera_matrix, right_camera_matrix,
-                 lambda_s=0.85):
+                 lambda_s=0.85, registration_lambda=0.1):
         super().__init__()
         self.left_camera_matrix = left_camera_matrix
         self.right_camera_matrix = right_camera_matrix
@@ -61,6 +62,7 @@ class TemporalImageLosses(torch.nn.Module):
         self.left_temporal_photometric_loss = TemporalPhotometricConsistencyLoss(self.left_camera_matrix, self.lambda_s)
         self.right_temporal_photometric_loss = TemporalPhotometricConsistencyLoss(self.right_camera_matrix,
                                                                                   self.lambda_s)
+        self.registration_loss = GeometricRegistrationLoss(registration_lambda, self.left_camera_matrix)
 
     def forward(self, left_current_image, left_next_image, left_current_depth, left_next_depth,
                 right_current_image, right_next_image, right_current_depth, right_next_depth,
@@ -82,4 +84,17 @@ class TemporalImageLosses(torch.nn.Module):
                                                                                right_current_angle,
                                                                                right_next_position,
                                                                                right_next_angle)
-        return (left_temporal_photometric_loss + right_temporal_photometric_loss) / 2
+        left_registration_loss = self.registration_loss(left_current_depth,
+                                                        left_next_depth,
+                                                        left_current_position,
+                                                        left_next_position,
+                                                        left_current_angle,
+                                                        left_next_angle)
+        right_registration_loss = self.registration_loss(right_current_depth,
+                                                         right_next_depth,
+                                                         right_current_position,
+                                                         right_next_position,
+                                                         right_current_angle,
+                                                         right_next_angle)
+        return ((left_temporal_photometric_loss + right_temporal_photometric_loss) / 2,
+                (left_registration_loss + right_registration_loss) / 2)
