@@ -147,7 +147,7 @@ class TrainingProcessHandler(object):
     def _write_figures(self, figures):
         for key, value in figures.items():
             self._writer.add_figure(key, value, self._global_epoch_step)
-            artifact_name = f"{self._log_folder}/{key}_{self._global_epoch_step}.png"
+            artifact_name = f"{self._log_folder}/{key}_{self._global_epoch_step:04d}.png"
             value.savefig(artifact_name)
             self._artifacts.append(artifact_name)
 
