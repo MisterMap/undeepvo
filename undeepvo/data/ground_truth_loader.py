@@ -23,10 +23,8 @@ class Groundtruth_data():
         image_path = os.path.join(self.images_folder, f'{self.names[id]}.png')
         intrinsic_path = os.path.join(self.intrinsics_folder, f'{self.names[id]}.txt')
         groundtruth_depth_path = os.path.join(self.groundtruth_depth_folder, f'{name_for_depth}.png')
-        image = cv2.imread(image_path)
-        intrinsic = np.loadtxt(intrinsic_path)
-        groundtruth_depth = cv2.imread(groundtruth_depth_path)
-        return image, groundtruth_depth, intrinsic
+        groundtruth_dict = {'image': cv2.imread(image_path), 'groundtruth_depth': cv2.imread(groundtruth_depth_path), 'intrinsic': np.loadtxt(intrinsic_path)}
+        return groundtruth_dict
 
 if __name__ == "__main__":
     a = Groundtruth_data()
