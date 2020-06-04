@@ -10,7 +10,6 @@ from undeepvo.problems import UnsupervisedDatasetManager, UnsupervisedDepthProbl
 from undeepvo.utils import OptimizerManager, TrainingProcessHandler
 from undeepvo.criterion import UnsupervisedCriterion
 
-
 if sys.platform == "win32":
     WORKERS_COUNT = 0
 else:

@@ -9,7 +9,8 @@ import pykitti.odometry
 
 from undeepvo.criterion import UnsupervisedCriterion, SupervisedCriterion
 from undeepvo.models import UnDeepVO, DepthNet
-from undeepvo.problems import UnsupervisedDatasetManager, UnsupervisedDepthProblem, SupervisedDatasetManager, SupervisedDepthProblem
+from undeepvo.problems import UnsupervisedDatasetManager, UnsupervisedDepthProblem, SupervisedDatasetManager, \
+    SupervisedDepthProblem
 from undeepvo.utils import OptimizerManager, TrainingProcessHandler
 
 from undeepvo.data.supervised import GroundTruthDataset
@@ -114,7 +115,8 @@ if args.method == "unsupervised":
     handler = TrainingProcessHandler(enable_mlflow=True, mlflow_tags={"name": args.mlflow_tags_name},
                                      mlflow_parameters={"image_step": args.frames_range[2], "max_depth": args.max_depth,
                                                         "epoch": args.epoch, "lambda_position": args.lambda_position,
-                                                        "lambda_rotation": args.lambda_rotation, "lambda_s": args.lambda_s,
+                                                        "lambda_rotation": args.lambda_rotation,
+                                                        "lambda_s": args.lambda_s,
                                                         "lambda_disparity": args.lambda_disparity})
     optimizer_manager = OptimizerManager(lr=args.lr)
     problem = UnsupervisedDepthProblem(model, criterion, optimizer_manager, dataset_manager, handler,
@@ -130,10 +132,12 @@ elif args.method == "supervised":
 
     handler = TrainingProcessHandler(enable_mlflow=True, mlflow_tags={"name": args.mlflow_tags_name},
                                      mlflow_parameters={"image_step": args.frames_range[2], "max_depth": args.max_depth,
-                                                        "epoch": args.epoch, "supervised_lambda": args.supervised_lambda})
+                                                        "epoch": args.epoch,
+                                                        "supervised_lambda": args.supervised_lambda})
     optimizer_manager = OptimizerManager(lr=args.lr)
     problem = SupervisedDepthProblem(model, criterion, optimizer_manager, dataset_manager, handler,
-                                       batch_size=args.batch, name="supervised depthnet")
+                                     batch_size=args.batch, name="supervised depthnet")
 else:
     exit("Unknown method")
+
 problem.train(args.epoch)
