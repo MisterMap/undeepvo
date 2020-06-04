@@ -3,6 +3,7 @@
 
 venv/
 dataset/
+**/depth_selection/**
 test/data*
 # Python chache
 __pycache__/
