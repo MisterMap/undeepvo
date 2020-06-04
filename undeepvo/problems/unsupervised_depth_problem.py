@@ -85,7 +85,7 @@ class UnsupervisedDepthProblem(Problem):
         left_current_img = self._dataset_manager.get_validation_dataset(with_normalize=False)[0]["left_current_image"]
         right_current_img = self._dataset_manager.get_validation_dataset(with_normalize=False)[0]["right_current_image"]
         generated_right_img = self._get_generated_image(left_current_img, right_current_depth, left=False)
-        generated_left_img = self._get_generated_image(right_current_img, left_current_depth, left=False)
+        generated_left_img = self._get_generated_image(right_current_img, left_current_depth)
 
         figure, axes = plt.subplots(3, 2, dpi=150)
 
@@ -93,11 +93,11 @@ class UnsupervisedDepthProblem(Problem):
         self._fill_in_axis(axes[1, 0], left_current_depth.cpu().permute(1, 2, 0).detach().numpy()[:, :, 0],
                            "Left current depth")
         self._fill_in_axis(axes[2, 0], torch.squeeze(generated_right_img).permute(1, 2, 0).detach().numpy(),
-                           "Generated right image")
+                           "Generated right image", depth=True)
 
         self._fill_in_axis(axes[0, 1], right_current_img.cpu().permute(1, 2, 0).detach().numpy(), "Right current image")
         self._fill_in_axis(axes[1, 1], right_current_depth.cpu().permute(1, 2, 0).detach().numpy()[:, :, 0],
-                           "Right current depth")
+                           "Right current depth", depth=True)
         self._fill_in_axis(axes[2, 1], torch.squeeze(generated_left_img).permute(1, 2, 0).detach().numpy(),
                            "Generated left image")
         figure.tight_layout()
