@@ -48,9 +48,8 @@ class UnsupervisedCriterion(nn.Module):
                                              right_next_output.translation,
                                              left_next_output.rotation,
                                              right_next_output.rotation)
-        return (current_spatial_loss + next_spatial_loss + temporal_loss,
-                current_photometric_loss + next_photometric_loss,
-                current_disparity_loss + next_disparity_loss,
-                current_pose_loss + next_pose_loss,
+        return ((current_spatial_loss + next_spatial_loss) / 2 + temporal_loss,
+                (current_photometric_loss + next_photometric_loss) / 2,
+                (current_disparity_loss + next_disparity_loss) / 2,
+                (current_pose_loss + next_pose_loss) / 2,
                 temporal_loss)
-
