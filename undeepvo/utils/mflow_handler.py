@@ -3,15 +3,22 @@ import os
 import mlflow
 import mlflow.exceptions
 
-DEFAULT_USER_NAME = "Mikhail.Kurenkov@skoltech.ru"
-DEFAULT_PASSWORD = "ILove512DataScienceCourse!"
-DEFAULT_DATABRICKS_HOST = "https://community.cloud.databricks.com"
-DEFAULT_EXPERIMENT_NAME = "/undeepvo/undeepvo"
+DEFAULT_USER_NAME = ""
+DEFAULT_PASSWORD = ""
+DEFAULT_DATABRICKS_HOST = ""
+DEFAULT_HOST_URI = "http://329801-ilinvalery.tmweb.ru:5001/"
+DEFAULT_EXPERIMENT_NAME = "undeepvo"
+CREATE_DATABRICKS_CREDENTIALS = False
+
+os.environ["MLFLOW_S3_ENDPOINT_URL"] = "http://329801-ilinvalery.tmweb.ru:9000"
+os.environ["AWS_ACCESS_KEY_ID"] = "123"
+os.environ["AWS_SECRET_ACCESS_KEY"] = "12345678"
 
 
 class MlFlowHandler(object):
     def __init__(self, experiment_name=DEFAULT_EXPERIMENT_NAME, user_name=DEFAULT_USER_NAME, password=DEFAULT_PASSWORD,
-                 host_uri="databricks", create_databricks_credential=True, databricks_host=DEFAULT_DATABRICKS_HOST, mlflow_tags={}, mlflow_parameters={}):
+                 host_uri=DEFAULT_HOST_URI, create_databricks_credential=CREATE_DATABRICKS_CREDENTIALS,
+                 databricks_host=DEFAULT_DATABRICKS_HOST, mlflow_tags={}, mlflow_parameters={}):
         self._user_name = DEFAULT_USER_NAME
         self._password = DEFAULT_PASSWORD
         if host_uri == "databricks" and create_databricks_credential:
@@ -40,6 +47,8 @@ class MlFlowHandler(object):
     def start_callback(self, parameters):
         try:
             mlflow.set_experiment(self._experiment_name)
+            if mlflow.active_run() is not None:
+                mlflow.end_run()
             mlflow.start_run()
             mlflow.set_tags(self._mlflow_tags)
             mlflow.log_params(parameters)
@@ -60,14 +69,16 @@ class MlFlowHandler(object):
             print(f"[WARNING][MlFlowHandler] - [FinishCallback] {msg}")
             print(f"[WARNING][MlFlowHandler] - [FinishCallback] mlflow is disabled")
 
-    def epoch_callback(self, metrics, current_epoch=0):
+    def epoch_callback(self, metrics, current_epoch=0, artifacts=None):
         if not self._enable_mlflow:
             return
         try:
             metrics["epoch"] = current_epoch
             mlflow.log_metrics(metrics, current_epoch)
-            mlflow.log_artifact(f"img_{current_epoch-1}.png")
-            os.remove(f"img_{current_epoch-1}.png")
+            if artifacts is not None:
+                for artifact in artifacts:
+                    mlflow.log_artifact(artifact)
+                    os.remove(artifact)
         except mlflow.exceptions.MlflowException as msg:
             self._enable_mlflow = False
             print(f"[WARNING][MlFlowHandler] - [EpochCallback] {msg}")

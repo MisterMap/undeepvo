@@ -58,28 +58,28 @@ class TemporalImageLosses(torch.nn.Module):
 
         self.lambda_s = lambda_s
 
-        self.temporal_photometric_consistency_loss = TemporalPhotometricConsistencyLoss(self.left_camera_matrix,
-                                                                                        self.right_camera_matrix,
-                                                                                        self.lambda_s)
+        self.left_temporal_photometric_loss = TemporalPhotometricConsistencyLoss(self.left_camera_matrix, self.lambda_s)
+        self.right_temporal_photometric_loss = TemporalPhotometricConsistencyLoss(self.right_camera_matrix,
+                                                                                  self.lambda_s)
 
     def forward(self, left_current_image, left_next_image, left_current_depth, left_next_depth,
                 right_current_image, right_next_image, right_current_depth, right_next_depth,
                 left_current_position, right_current_position, left_current_angle, right_current_angle,
                 left_next_position, right_next_position, left_next_angle, right_next_angle):
-        temporal_photometric_consistency_loss = self.temporal_photometric_consistency_loss(left_current_image,
-                                                                                           left_next_image,
-                                                                                           left_current_depth,
-                                                                                           left_next_depth,
-                                                                                           right_current_image,
-                                                                                           right_next_image,
-                                                                                           right_current_depth,
-                                                                                           right_next_depth,
-                                                                                           left_current_position,
-                                                                                           right_current_position,
-                                                                                           left_current_angle,
-                                                                                           right_current_angle,
-                                                                                           left_next_position,
-                                                                                           right_next_position,
-                                                                                           left_next_angle,
-                                                                                           right_next_angle)
-        return temporal_photometric_consistency_loss
+        left_temporal_photometric_loss = self.left_temporal_photometric_loss(left_current_image,
+                                                                             left_next_image,
+                                                                             left_current_depth,
+                                                                             left_next_depth,
+                                                                             left_current_position,
+                                                                             left_current_angle,
+                                                                             left_next_position,
+                                                                             left_next_angle)
+        right_temporal_photometric_loss = self.right_temporal_photometric_loss(right_current_image,
+                                                                               right_next_image,
+                                                                               right_current_depth,
+                                                                               right_next_depth,
+                                                                               right_current_position,
+                                                                               right_current_angle,
+                                                                               right_next_position,
+                                                                               right_next_angle)
+        return (left_temporal_photometric_loss + right_temporal_photometric_loss) / 2
