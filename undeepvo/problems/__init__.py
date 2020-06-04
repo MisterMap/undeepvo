@@ -1,2 +1,3 @@
 from .unsupervised_dataset_manager import UnsupervisedDatasetManager
 from .unsupervised_depth_problem import UnsupervisedDepthProblem
+from .supervised_depth_problem import SupervisedDepthProblem
