@@ -18,6 +18,7 @@ class TestSupervisedDatasetManager(unittest.TestCase):
         dataset = GroundTruthDataset(length=260)
         lengths = (200, 30, 30)
         dataset_manager = SupervisedDatasetManager(dataset, lenghts=lengths, num_workers=WORKERS_COUNT)
+
         self.assertEqual(len(dataset_manager.get_train_dataset()), lengths[0])
         self.assertEqual(len(dataset_manager.get_test_dataset()), lengths[1])
         self.assertEqual(len(dataset_manager.get_validation_dataset()), lengths[2])

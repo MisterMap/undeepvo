@@ -40,7 +40,7 @@ class SupervisedDepthProblem(Problem):
     def _get_figures(self):
         self._model.eval()
         image = self._dataset_manager.get_validation_dataset(with_normalize=True)[0][0]
-        depth = self._dataset_manager.get_validation_dataset(with_normalize=True)[0][1]
+        depth = self._dataset_manager.get_validation_dataset(with_normalize=True)[0][0]
         with torch.no_grad():
             depth_model = self._model.depth(image[None].to(self._device))
         depth_model = depth_model[0].cpu().permute(1, 2, 0).detach().numpy()[:, :, 0]
