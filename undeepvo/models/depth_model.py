@@ -144,7 +144,7 @@ class DepthNet(nn.Module):
             if self.last_sigmoid:
                 out = self.min_depth + torch.sigmoid(out) * (self.max_depth - self.min_depth)
             else:
-                out = self.min_depth + out * (self.max_depth - self.min_depth)
+                out = self.min_depth + (out + 1) * (self.max_depth - self.min_depth) / 2.
                 out = torch.clamp(out, self.min_depth, self.max_depth)
         else:
             out = 1 / ((-9.99 * torch.sigmoid(out)) + 10) # from monodepth2
