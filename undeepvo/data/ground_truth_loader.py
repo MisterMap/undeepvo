@@ -18,13 +18,14 @@ class Groundtruth_data():
         self.groundtruth_depth_folder = os.path.join(os.curdir, main_folder, 'val_selection_cropped', 'groundtruth_depth')
 
     def get_item(self, id):
+
+        name_for_depth = f'{self.names[id].split("image")[0]}groundtruth_depth{self.names[id].split("image")[1]}image{self.names[id].split("image")[2]}'
         image_path = os.path.join(self.images_folder, f'{self.names[id]}.png')
         intrinsic_path = os.path.join(self.intrinsics_folder, f'{self.names[id]}.txt')
-        groundtruth_depth_path = os.path.join(self.groundtruth_depth_folder, f'{self.names[id]}.png')
+        groundtruth_depth_path = os.path.join(self.groundtruth_depth_folder, f'{name_for_depth}.png')
         image = cv2.imread(image_path)
         intrinsic = np.loadtxt(intrinsic_path)
         groundtruth_depth = cv2.imread(groundtruth_depth_path)
-
         return image, groundtruth_depth, intrinsic
 
 if __name__ == "__main__":
