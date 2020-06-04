@@ -84,7 +84,7 @@ class UnsupervisedDepthProblem(Problem):
         right_current_depth = depth_image[0].clone()
         left_current_img = self._dataset_manager.get_validation_dataset(with_normalize=False)[0]["left_current_image"]
         right_current_img = self._dataset_manager.get_validation_dataset(with_normalize=False)[0]["right_current_image"]
-        generated_right_img = self._get_generated_image(left_current_img, right_current_depth, left=False)
+        generated_right_img = self._get_generated_image(left_current_img, right_current_depth, left=True)
         generated_left_img = self._get_generated_image(right_current_img, left_current_depth, left=False)
 
         figure, axes = plt.subplots(3, 2, dpi=150)
