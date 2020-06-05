@@ -27,7 +27,6 @@ class SpatialPhotometricConsistencyLoss(torch.nn.Module):
 
         left_mask = generated_right_img == 0.0
 
-        print (f"generated_right_img = {generated_right_img}")
         generated_left_img = kornia.warp_frame_depth(image_src=right_current_img,
                                                      depth_dst=left_current_depth,
                                                      src_trans_dst=torch.inverse(self.transform_from_left_to_right),
