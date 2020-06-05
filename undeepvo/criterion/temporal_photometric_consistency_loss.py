@@ -34,11 +34,11 @@ class TemporalPhotometricConsistencyLoss(torch.nn.Module):
 
     def forward(self, current_image, next_image, current_depth, next_depth,
                 current_position, current_angle, next_position, next_angle):
-        transformation_from_current_to_next = generate_relative_transformation(current_position,
+        transformation_from_next_to_current = generate_relative_transformation(current_position,
                                                                                current_angle,
                                                                                next_position,
                                                                                next_angle)
-        transformation_from_next_to_current = generate_relative_transformation(next_position,
+        transformation_from_current_to_next = generate_relative_transformation(next_position,
                                                                                next_angle,
                                                                                current_position,
                                                                                current_angle)
