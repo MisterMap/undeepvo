@@ -14,6 +14,7 @@ else:
 
 
 class TestSupervisedDatasetManager(unittest.TestCase):
+    @unittest.skip("")
     def test_dataset_manager(self):
         dataset = GroundTruthDataset(length=260)
         lengths = (200, 30, 30)
