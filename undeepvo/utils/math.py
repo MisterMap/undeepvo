@@ -15,7 +15,7 @@ def generate_transformation(translation, rotation):
 def generate_pose(transformation):
     translation = transformation[:, :3, 3]
     rotation_matrix = transformation[:, :3, :3].clone()
-    rotation = kornia.geometry.rotation_matrix_to_quaternion(rotation_matrix)
+    rotation = kornia.geometry.rotation_matrix_to_quaternion(rotation_matrix, eps=1e-4)
     rotation = torch.where(rotation[:, 3] > 0, rotation, -rotation)
     return translation, rotation
 

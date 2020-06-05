@@ -18,7 +18,7 @@ class PoseLoss(torch.nn.Module):
         right_transformed_position, right_transformed_angle = generate_pose(
             kornia.compose_transformations(right_transformation, self._right_from_left_transformation)
         )
-        left_angle = kornia.normalize_quaternion(left_angle)
+        left_angle = kornia.normalize_quaternion(left_angle, eps=1e-4)
         translation_loss = self._lambda_position * self._l1_loss(left_position, right_transformed_position)
         rotation_loss = self._lambda_angle * self._l1_loss(left_angle, right_transformed_angle)
         return translation_loss + rotation_loss
