@@ -23,7 +23,8 @@ class UnsupervisedDepthProblem(Problem):
         self._model.train()
 
         # Forward
-        loss, spatial_photometric_loss, disparity_loss, pose_loss, temporal_loss = self.evaluate_batch(batch)
+        loss, spatial_photometric_loss, disparity_loss, depth_loss, pose_loss, temporal_loss = self.evaluate_batch(
+            batch)
 
         # Backward
         loss.backward()
@@ -31,23 +32,27 @@ class UnsupervisedDepthProblem(Problem):
         end_time = time.time()
         return {"loss": loss.item(), "time": end_time - start_time,
                 "spat_photo_loss": spatial_photometric_loss.item(), "disparity_loss": disparity_loss.item(),
+                "depth_loss": depth_loss.item(),
                 "pose_loss": pose_loss.item(),
                 "temporal_loss": temporal_loss.item()}
 
     def evaluate_batches(self, batches):
         self._model.eval()
-        total_loss, total_spatial_photometric_loss, total_disparity_loss, total_pose_loss = 0, 0, 0, 0
+        total_loss, total_spatial_photometric_loss, total_disparity_loss, total_depth_loss, total_pose_loss = 0, 0, 0, 0, 0
         total_temporal_loss = 0
         with torch.no_grad():
             for batch in batches:
-                loss, spatial_photometric_loss, disparity_loss, pose_loss, temporal_loss = self.evaluate_batch(batch)
+                loss, spatial_photometric_loss, disparity_loss, depth_loss, pose_loss, temporal_loss = self.evaluate_batch(
+                    batch)
                 total_loss += loss.item()
                 total_disparity_loss += disparity_loss.item()
+                total_depth_loss += depth_loss.item()
                 total_pose_loss += pose_loss.item()
                 total_spatial_photometric_loss += spatial_photometric_loss.item()
                 total_temporal_loss += temporal_loss.item()
         return {"loss": total_loss / len(batches),
                 "disparity_loss": total_disparity_loss / len(batches),
+                "depth_loss": total_depth_loss / len(batches),
                 "pose_loss": total_pose_loss / len(batches),
                 "spat_photo_loss": total_spatial_photometric_loss / len(batches),
                 "temporal_loss": total_temporal_loss / len(batches)}
