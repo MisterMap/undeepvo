@@ -7,7 +7,7 @@ from PIL import Image
 
 from undeepvo.criterion import SpatialLosses, TemporalImageLosses
 from undeepvo.models import UnDeepVO
-
+from undeepvo.models.utils import init_weights
 device = "cpu"
 
 
@@ -55,7 +55,7 @@ class TestLosses(unittest.TestCase):
 
         left_next_depth = model.depth(left_next_img).to(device)
         right_next_depth = model.depth(right_next_img).to(device)
-
+        print(left_next_depth[0, 0, 50])
         left_current_rotation, left_current_position = model.pose(left_current_img)
         right_current_rotation, right_current_position = model.pose(right_current_img)
 
