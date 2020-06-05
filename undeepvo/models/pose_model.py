@@ -28,7 +28,7 @@ class PoseNet(nn.Module):
 
         self.rot1 = nn.Linear(n_base_channels*32*7*7, 512)
         self.rot2 = nn.Linear(512, 512)
-        self.rot3 = nn.Linear(512, 3)
+        self.rot3 = nn.Linear(512, 4)
 
         self.transl1 = nn.Linear(n_base_channels*32*7*7, 512)
         self.transl2 = nn.Linear(512, 512)
@@ -77,7 +77,7 @@ class PoseNetResNet(nn.Module):
 
         self.rot1 = nn.Linear(512 * 6 * 6, 512)
         self.rot2 = nn.Linear(512, 512)
-        self.rot3 = nn.Linear(512, 3)
+        self.rot3 = nn.Linear(512, 4)
 
         self.transl1 = nn.Linear(512 * 6 * 6, 512)
         self.transl2 = nn.Linear(512, 512)

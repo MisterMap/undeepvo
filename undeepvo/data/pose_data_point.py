@@ -1,6 +1,6 @@
 import kornia
-import torch
 import numpy as np
+import torch
 
 
 class PoseDataPoint:
@@ -11,6 +11,11 @@ class PoseDataPoint:
         self._next_angle_name = "next_angle"
         self._delta_position_name = "delta_position"
         self._delta_angle_name = "delta_angle"
+        self._current_transformation_name = "current_transformation"
+        self._next_transformation_name = "next_transformation"
+
+        self._current_transformation = torch.from_numpy(current_matrix.astype('float32'))
+        self._next_transformation = torch.from_numpy(next_matrix.astype('float32'))
 
         self._current_angle = kornia.rotation_matrix_to_angle_axis(
             torch.from_numpy(current_matrix[:3, :3].astype('float32')).reshape(1, 3, 3)).permute(1, 0).squeeze()
@@ -61,8 +66,18 @@ class PoseDataPoint:
         """
         return {**self.get_delta_position(), **self.get_delta_angle()}
 
+    def get_current_transformation(self):
+        return {self._current_transformation_name: self._current_transformation}
+
+    def get_next_transformation(self):
+        return {self._next_transformation_name: self._next_transformation}
+
+    def get_transformation(self):
+        return {**self.get_current_transformation(), **self.get_next_transformation()}
+
     def get_data(self):
         """
         :return: dictionaries in format position, angle: 3 for each current, next and delta
         """
-        return {**self.get_current_state(), **self.get_next_state(), **self.get_delta_state()}
+        return {**self.get_current_state(), **self.get_next_state(), **self.get_delta_state(),
+                **self.get_transformation()}
