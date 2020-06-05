@@ -37,7 +37,8 @@ class SpatialLosses(torch.nn.Module):
         self.disparity_consistency_loss = DisparityConsistencyLoss(self.Bf, self.left_camera_matrix,
                                                                    self.right_camera_matrix,
                                                                    self.transform_from_left_to_right, lambda_disparity)
-        self.pose_loss = PoseLoss(self.lambda_position, self.lambda_angle)
+        self.pose_loss = PoseLoss(self.lambda_position, self.lambda_angle,
+                                  self.transform_from_left_to_right)
 
     def forward(self, left_current_image, right_current_image,
                 left_current_depth, right_current_depth,

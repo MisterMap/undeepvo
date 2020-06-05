@@ -23,7 +23,7 @@ class UnsupervisedDepthProblem(Problem):
         self._model.train()
 
         # Forward
-        loss, spatial_photometric_loss, disparity_loss, pose_loss, temporal_loss, registration_loss\
+        loss, spatial_photometric_loss, disparity_loss, pose_loss, temporal_loss, registration_loss \
             = self.evaluate_batch(batch)
 
         # Backward
@@ -43,7 +43,7 @@ class UnsupervisedDepthProblem(Problem):
         total_registration_loss = 0
         with torch.no_grad():
             for batch in batches:
-                loss, spatial_photometric_loss, disparity_loss, pose_loss, temporal_loss, registration_loss\
+                loss, spatial_photometric_loss, disparity_loss, pose_loss, temporal_loss, registration_loss \
                     = self.evaluate_batch(batch)
                 total_loss += loss.item()
                 total_disparity_loss += disparity_loss.item()
@@ -88,12 +88,12 @@ class UnsupervisedDepthProblem(Problem):
         with torch.no_grad():
             generated_left_image = kornia.warp_frame_depth(right_current_image,
                                                            left_current_depth,
-                                                           torch.inverse(
-                                                               cameras_calibration.transform_from_left_to_right),
+                                                           cameras_calibration.transform_from_left_to_right,
                                                            cameras_calibration.left_camera_matrix)
             generated_right_image = kornia.warp_frame_depth(left_current_image,
                                                             right_current_depth,
-                                                            cameras_calibration.transform_from_left_to_right,
+                                                            torch.inverse(
+                                                                cameras_calibration.transform_from_left_to_right),
                                                             cameras_calibration.left_camera_matrix)
 
         figure = plt.figure(dpi=200, figsize=(9, 6))
