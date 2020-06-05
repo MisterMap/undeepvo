@@ -95,7 +95,7 @@ class DepthNetResNet(nn.Module):
             UnetUpBlockResNet(n_base_channels * 4 + n_base_channels * 16, n_base_channels * 8),  # 128 + 512 --- 256
             UnetUpBlockResNet(n_base_channels * 2 + n_base_channels * 8, n_base_channels * 8),  # 64 + 256 --- 256
             UnetUpBlockResNet(n_base_channels * 2 + n_base_channels * 8, n_base_channels * 4),  # 64 + 256 --- 128
-            UnetUpBlockResNet(n_base_channels * 2 + n_base_channels * 4, 32)  # 64 + 128 --- 1
+            UnetUpBlockResNet(n_base_channels * 2 + n_base_channels * 4, 64)  # 64 + 128 --- 1
         ])
         
         self.last_up = LastUpBlockResNet(n_base_channels * 2, 32)
