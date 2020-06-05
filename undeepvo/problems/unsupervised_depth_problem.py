@@ -70,7 +70,7 @@ class UnsupervisedDepthProblem(Problem):
         image = self._dataset_manager.get_validation_dataset(with_normalize=False)[0]["left_current_image"]
         raw_image = image.cpu().permute(1, 2, 0).detach().numpy()
         self.fill_in_axis(axes[0], raw_image, "Left current image")
-        self.fill_in_axis(axes[1], depth_image, "Left current depth", depth=True)
+        self.fill_in_axis(axes[1], 1.0/depth_image, "Left current depth", depth=True)
         figure.tight_layout()
         return {"depth": figure}
 
@@ -109,12 +109,12 @@ class UnsupervisedDepthProblem(Problem):
 
         plt.subplot(3, 2, 3)
         depth_image = left_current_depth[0].detach().cpu().permute(1, 2, 0).numpy()[:, :, 0]
-        plt.imshow(np.clip(depth_image, 0, 100) / 100, cmap="inferno")
+        plt.imshow(np.clip(1.0 / depth_image, 0, 100) / 100, cmap="inferno")
         self.set_title("Left current depth")
 
         plt.subplot(3, 2, 4)
         depth_image = right_current_depth[0].detach().cpu().permute(1, 2, 0).numpy()[:, :, 0]
-        plt.imshow(np.clip(depth_image, 0, 100) / 100, cmap="inferno")
+        plt.imshow(np.clip(1.0 / depth_image, 0, 100) / 100, cmap="inferno")
         self.set_title("Right current depth")
 
         plt.subplot(3, 2, 5)
