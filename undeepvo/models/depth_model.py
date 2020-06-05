@@ -52,7 +52,7 @@ class LastUpBlock(nn.Module):
         self.convs = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
             nn.ReLU(),
-            nn.Conv2d(out_channels, out_channels, kernel_size=1, padding=0),
+            nn.Conv2d(out_channels, 1, kernel_size=1, padding=0),
             #nn.ReLU(),
         )
 
