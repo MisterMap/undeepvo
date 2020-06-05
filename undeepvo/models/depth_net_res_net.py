@@ -21,6 +21,23 @@ class UnetUpBlockResNet(nn.Module):
         out = self.convs(x_concat)
 
         return out
+    
+class LastUpBlockResNet(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super().__init__()
+
+        self.convs = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
+            nn.ELU(),
+            nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
+            nn.ELU()
+        )
+        
+    def forward(self, x):
+
+        out = self.convs(x)
+        
+        return out
 
 
 class UnetDownBlockResNet(nn.Module):
@@ -80,6 +97,9 @@ class DepthNetResNet(nn.Module):
             UnetUpBlockResNet(n_base_channels * 2 + n_base_channels * 8, n_base_channels * 4),  # 64 + 256 --- 128
             UnetUpBlockResNet(n_base_channels * 2 + n_base_channels * 4, 32)  # 64 + 128 --- 1
         ])
+        
+        self.last_up = LastUpBlockResNet(n_base_channels * 2, 32)
+        
         self._last_conv = nn.Conv2d(32, 1, 1)
         # possible option
         # self.upsample = nn.ConvTranspose2d(n_base_channels * 4, n_base_channels * 4, 3, stride=2, padding=1)
@@ -90,8 +110,8 @@ class DepthNetResNet(nn.Module):
 
         outputs_before_pooling = []
 
-        skip_0 = self.skip_zero(x)
-        skip_00 = self.skip_zero1(skip_0)
+        skip_0 = torch.relu(self.skip_zero(x))
+        skip_00 = torch.relu(self.skip_zero1(skip_0))
         outputs_before_pooling.append(skip_00)
 
         x = self.first_level(x)
@@ -112,6 +132,7 @@ class DepthNetResNet(nn.Module):
         for (i, block) in enumerate(self.up_blocks):
             out = block(out, outputs_before_pooling[-i - 2])
             
+        out = self.last_up(out)
         out = self._last_conv(out)
         
         if not self.inverse_sigmoid:
