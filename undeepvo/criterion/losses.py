@@ -1,7 +1,7 @@
 import torch
 
 from .disparity_consistency_loss import DisparityConsistencyLoss
-from .depth_consistency_loss import DepthConsistencyLoss
+from .inverse_depth_smoothness_loss import InverseDepthSmoothnessLoss
 from .pose_loss import PoseLoss
 from .spatial_photometric_consistency_loss import SpatialPhotometricConsistencyLoss
 from .temporal_photometric_consistency_loss import TemporalPhotometricConsistencyLoss
@@ -37,8 +37,7 @@ class SpatialLosses(torch.nn.Module):
         self.disparity_consistency_loss = DisparityConsistencyLoss(self.Bf, self.left_camera_matrix,
                                                                    self.right_camera_matrix,
                                                                    self.transform_from_left_to_right, lambda_disparity)
-        self.depth_consistency_loss = DepthConsistencyLoss(self.left_camera_matrix, self.right_camera_matrix,
-                                                           self.transform_from_left_to_right, lambda_depth)
+        self.inverse_depth_smoothness_loss = InverseDepthSmoothnessLoss(lambda_depth)
 
         self.pose_loss = PoseLoss(self.lambda_position, self.lambda_angle)
 
@@ -48,10 +47,10 @@ class SpatialLosses(torch.nn.Module):
         photometric_consistency_loss = self.photometric_consistency_loss(left_current_image, right_current_image,
                                                                          left_current_depth, right_current_depth)
         disparity_consistency_loss = self.disparity_consistency_loss(left_current_depth, right_current_depth)
-        depth_consistency_loss = self.depth_consistency_loss(left_current_depth, left_current_image, right_current_depth, right_current_image)
+        inverse_depth_smoothness_loss = self.inverse_depth_smoothness_loss(left_current_depth, left_current_image, right_current_depth, right_current_image)
         pose_loss = self.pose_loss(left_position, right_position, left_angle, right_angle)
-        return (photometric_consistency_loss + disparity_consistency_loss + depth_consistency_loss + pose_loss, photometric_consistency_loss,
-                disparity_consistency_loss, depth_consistency_loss, pose_loss)
+        return (photometric_consistency_loss + disparity_consistency_loss + inverse_depth_smoothness_loss + pose_loss, photometric_consistency_loss,
+                disparity_consistency_loss, inverse_depth_smoothness_loss, pose_loss)
 
 
 class TemporalImageLosses(torch.nn.Module):

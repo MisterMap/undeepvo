@@ -22,12 +22,12 @@ class UnsupervisedCriterion(nn.Module):
 
     def forward(self, left_current_output: ResultDataPoint, right_current_output: ResultDataPoint,
                 left_next_output: ResultDataPoint, right_next_output: ResultDataPoint):
-        current_spatial_loss, current_photometric_loss, current_disparity_loss, current_depth_loss, current_pose_loss = \
+        current_spatial_loss, current_photometric_loss, current_disparity_loss, current_inverse_depth_smoothness_loss, current_pose_loss = \
             self.spatial_losses(left_current_output.input_image, right_current_output.input_image,
                                 left_current_output.depth, right_current_output.depth,
                                 left_current_output.translation, right_current_output.translation,
                                 left_current_output.rotation, right_current_output.rotation)
-        next_spatial_loss, next_photometric_loss, next_disparity_loss, next_depth_loss, next_pose_loss = \
+        next_spatial_loss, next_photometric_loss, next_disparity_loss, next_inverse_depth_smoothness_loss, next_pose_loss = \
             self.spatial_losses(left_next_output.input_image, right_next_output.input_image,
                                 left_next_output.depth, right_next_output.depth,
                                 left_next_output.translation, right_next_output.translation,
@@ -51,6 +51,6 @@ class UnsupervisedCriterion(nn.Module):
         return ((current_spatial_loss + next_spatial_loss) / 2 + temporal_loss,
                 (current_photometric_loss + next_photometric_loss) / 2,
                 (current_disparity_loss + next_disparity_loss) / 2,
-                (current_depth_loss + next_depth_loss) / 2,
+                (current_inverse_depth_smoothness_loss + next_inverse_depth_smoothness_loss) / 2,
                 (current_pose_loss + next_pose_loss) / 2,
                 temporal_loss)
