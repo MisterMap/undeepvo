@@ -1,6 +1,7 @@
 import kornia
 import numpy as np
 import torch
+from undeepvo.utils.math import numpy_euler_angles_from_rotation_matrix
 
 
 class PoseDataPoint:
@@ -17,12 +18,12 @@ class PoseDataPoint:
         self._current_transformation = torch.from_numpy(current_matrix.astype('float32'))
         self._next_transformation = torch.from_numpy(next_matrix.astype('float32'))
 
-        self._current_angle = kornia.rotation_matrix_to_angle_axis(
-            torch.from_numpy(current_matrix[:3, :3].astype('float32')).reshape(1, 3, 3)).permute(1, 0).squeeze()
-        self._next_angle = kornia.rotation_matrix_to_angle_axis(
-            torch.from_numpy(next_matrix[:3, :3].astype('float32')).reshape(1, 3, 3)).permute(1, 0).squeeze()
-        self._current_position = torch.from_numpy(current_matrix[:3, 3])
-        self._next_position = torch.from_numpy(next_matrix[:3, 3])
+        current_angles = numpy_euler_angles_from_rotation_matrix(current_matrix[:3, :3]).astype('float32')
+        self._current_angle = torch.from_numpy(current_angles)
+        next_angles = numpy_euler_angles_from_rotation_matrix(next_matrix[:3, :3]).astype('float32')
+        self._next_angle = torch.from_numpy(next_angles)
+        self._current_position = torch.from_numpy(current_matrix[:3, 3]).float()
+        self._next_position = torch.from_numpy(next_matrix[:3, 3]).float()
 
         delta_matrix = kornia.relative_transformation(torch.from_numpy(current_matrix.astype('float32')),
                                                       torch.from_numpy(next_matrix.astype('float32')))
