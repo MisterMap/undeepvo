@@ -23,3 +23,8 @@ class ResultDataPoint(object):
         std = torch.as_tensor(std, device=tensor.device)[None, :, None, None]
         tensor = tensor.sub(mean).div(std)
         return tensor
+
+    def update_pose(self, translation, rotation):
+        self.translation = translation
+        self.rotation = rotation
+

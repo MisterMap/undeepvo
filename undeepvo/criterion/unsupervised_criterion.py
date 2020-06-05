@@ -7,18 +7,19 @@ from .losses import SpatialLosses, TemporalImageLosses
 
 class UnsupervisedCriterion(nn.Module):
     def __init__(self, cameras_calibration: CamerasCalibration, lambda_position, lambda_angle, lambda_s,
-                 lambda_disparity=1.0):
+                 lambda_disparity=0.01, lambda_registration=0.01, lambda_smoothness=1.0):
         super(UnsupervisedCriterion, self).__init__()
         self.spatial_losses = SpatialLosses(cameras_calibration.camera_baseline,
                                             cameras_calibration.focal_length,
                                             cameras_calibration.left_camera_matrix,
                                             cameras_calibration.right_camera_matrix,
                                             cameras_calibration.transform_from_left_to_right,
-                                            lambda_position, lambda_angle, lambda_s, lambda_disparity)
+                                            lambda_position, lambda_angle, lambda_s, lambda_disparity,
+                                            lambda_smoothness)
 
         self.temporal_losses = TemporalImageLosses(cameras_calibration.left_camera_matrix,
                                                    cameras_calibration.right_camera_matrix,
-                                                   lambda_s)
+                                                   lambda_s, lambda_registration)
 
     def forward(self, left_current_output: ResultDataPoint, right_current_output: ResultDataPoint,
                 left_next_output: ResultDataPoint, right_next_output: ResultDataPoint):
@@ -32,25 +33,26 @@ class UnsupervisedCriterion(nn.Module):
                                 left_next_output.depth, right_next_output.depth,
                                 left_next_output.translation, right_next_output.translation,
                                 left_next_output.rotation, right_next_output.rotation)
-        temporal_loss = self.temporal_losses(left_current_output.input_image,
-                                             left_next_output.input_image,
-                                             left_current_output.depth,
-                                             left_next_output.depth,
-                                             right_current_output.input_image,
-                                             right_next_output.input_image,
-                                             right_current_output.depth,
-                                             right_next_output.depth,
-                                             left_current_output.translation,
-                                             right_current_output.translation,
-                                             left_current_output.rotation,
-                                             right_current_output.rotation,
-                                             left_next_output.translation,
-                                             right_next_output.translation,
-                                             left_next_output.rotation,
-                                             right_next_output.rotation)
-        return ((current_spatial_loss + next_spatial_loss) / 2 + temporal_loss,
+        temporal_loss, registration_loss = self.temporal_losses(left_current_output.input_image,
+                                                                left_next_output.input_image,
+                                                                left_current_output.depth,
+                                                                left_next_output.depth,
+                                                                right_current_output.input_image,
+                                                                right_next_output.input_image,
+                                                                right_current_output.depth,
+                                                                right_next_output.depth,
+                                                                left_current_output.translation,
+                                                                right_current_output.translation,
+                                                                left_current_output.rotation,
+                                                                right_current_output.rotation,
+                                                                left_next_output.translation,
+                                                                right_next_output.translation,
+                                                                left_next_output.rotation,
+                                                                right_next_output.rotation)
+        return ((current_spatial_loss + next_spatial_loss) / 2 + temporal_loss + registration_loss,
                 (current_photometric_loss + next_photometric_loss) / 2,
                 (current_disparity_loss + next_disparity_loss) / 2,
                 (current_inverse_depth_smoothness_loss + next_inverse_depth_smoothness_loss) / 2,
                 (current_pose_loss + next_pose_loss) / 2,
-                temporal_loss)
+                temporal_loss,
+                registration_loss)
