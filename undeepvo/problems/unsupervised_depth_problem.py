@@ -52,7 +52,7 @@ class UnsupervisedDepthProblem(Problem):
                 total_temporal_loss += temporal_loss.item()
         return {"loss": total_loss / len(batches),
                 "disparity_loss": total_disparity_loss / len(batches),
-                "depth_loss": total_depth_loss / len(batches),
+                "inverse_depth_loss": total_depth_loss / len(batches),
                 "pose_loss": total_pose_loss / len(batches),
                 "spat_photo_loss": total_spatial_photometric_loss / len(batches),
                 "temporal_loss": total_temporal_loss / len(batches)}
