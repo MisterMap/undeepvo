@@ -4,7 +4,7 @@ import torch
 
 class SpatialPhotometricConsistencyLoss(torch.nn.Module):
     def __init__(self, lambda_s, left_camera_matrix, right_camera_matrix, transform_from_left_to_right,
-                 window_size=11, reduction: str = "none", max_val: float = 1.0):
+                 window_size=11, reduction: str = "mean", max_val: float = 1.0):
         super().__init__()
         self.lambda_s = lambda_s
         self.window_size = window_size
