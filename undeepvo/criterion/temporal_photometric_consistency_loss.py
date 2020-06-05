@@ -46,13 +46,9 @@ class TemporalPhotometricConsistencyLoss(torch.nn.Module):
         generated_next_image = self.generate_next_image(current_image, next_depth,
                                                         transformation_from_next_to_current)
 
-        next_image_mask = generated_next_image == 0.0
-
         generated_current_image = self.generate_current_image(next_image, current_depth,
                                                               transformation_from_current_to_next)
 
-        current_image_mask = generated_current_image == 0.0
-
-        next_loss = self.calculate_loss(next_image_mask * generated_next_image, next_image_mask * next_image)
-        current_loss = self.calculate_loss(current_image_mask * generated_current_image, current_image_mask * current_image)
+        next_loss = self.calculate_loss(generated_next_image, next_image)
+        current_loss = self.calculate_loss(generated_current_image, current_image)
         return (next_loss + current_loss) / 2
