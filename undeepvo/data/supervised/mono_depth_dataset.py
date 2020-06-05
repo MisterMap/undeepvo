@@ -25,6 +25,7 @@ class MonoDepthDataset(Dataset):
 
         image = torch.from_numpy(image).permute(2, 0, 1)
         depth = torch.from_numpy(depth).unsqueeze(0)
+        depth = depth.float()
         return image, depth
 
     def __len__(self):
