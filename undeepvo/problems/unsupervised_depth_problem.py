@@ -40,8 +40,9 @@ class UnsupervisedDepthProblem(Problem):
         self._model.train()
 
         # Forward
-        loss, spatial_photometric_loss, disparity_loss, pose_loss, temporal_loss, registration_loss \
-            = self.evaluate_batch(batch)
+        loss, spatial_photometric_loss, disparity_loss, depth_loss, pose_loss, temporal_loss, registration_loss \
+            = self.evaluate_batch(
+            batch)
 
         # Backward
         loss.backward()
@@ -49,27 +50,31 @@ class UnsupervisedDepthProblem(Problem):
         end_time = time.time()
         return {"loss": loss.item(), "time": end_time - start_time,
                 "spat_photo_loss": spatial_photometric_loss.item(), "disparity_loss": disparity_loss.item(),
+                "depth_loss": depth_loss.item(),
                 "pose_loss": pose_loss.item(),
                 "temporal_loss": temporal_loss.item(),
                 "registration_loss": registration_loss.item()}
 
     def evaluate_batches(self, batches):
         self._model.eval()
-        total_loss, total_spatial_photometric_loss, total_disparity_loss, total_pose_loss = 0, 0, 0, 0
+        total_loss, total_spatial_photometric_loss, total_disparity_loss, total_inverse_depth_smoothness_loss, total_pose_loss = 0, 0, 0, 0, 0
         total_temporal_loss = 0
         total_registration_loss = 0
         with torch.no_grad():
             for batch in batches:
-                loss, spatial_photometric_loss, disparity_loss, pose_loss, temporal_loss, registration_loss \
-                    = self.evaluate_batch(batch)
+                loss, spatial_photometric_loss, disparity_loss, inverse_depth_smoothness_loss, pose_loss, temporal_loss, registration_loss \
+                    = self.evaluate_batch(
+                    batch)
                 total_loss += loss.item()
                 total_disparity_loss += disparity_loss.item()
+                total_inverse_depth_smoothness_loss += inverse_depth_smoothness_loss.item()
                 total_pose_loss += pose_loss.item()
                 total_spatial_photometric_loss += spatial_photometric_loss.item()
                 total_temporal_loss += temporal_loss.item()
                 total_registration_loss += registration_loss.item()
         return {"loss": total_loss / len(batches),
                 "disparity_loss": total_disparity_loss / len(batches),
+                "inverse_depth_smoothness_loss": total_inverse_depth_smoothness_loss / len(batches),
                 "pose_loss": total_pose_loss / len(batches),
                 "spat_photo_loss": total_spatial_photometric_loss / len(batches),
                 "temporal_loss": total_temporal_loss / len(batches),
@@ -88,7 +93,7 @@ class UnsupervisedDepthProblem(Problem):
         image = self._dataset_manager.get_validation_dataset(with_normalize=False)[0]["left_current_image"]
         raw_image = image.cpu().permute(1, 2, 0).detach().numpy()
         self.fill_in_axis(axes[0], raw_image, "Left current image")
-        self.fill_in_axis(axes[1], depth_image, "Left current depth", depth=True)
+        self.fill_in_axis(axes[1], 1.0/depth_image, "Left current depth", depth=True)
         figure.tight_layout()
         return {"depth": figure}
 
@@ -127,12 +132,12 @@ class UnsupervisedDepthProblem(Problem):
 
         plt.subplot(3, 2, 3)
         depth_image = left_current_depth[0].detach().cpu().permute(1, 2, 0).numpy()[:, :, 0]
-        plt.imshow(np.clip(depth_image, 0, 100) / 100, cmap="inferno")
+        plt.imshow(np.clip(1.0 / depth_image, 0, 100) / 100, cmap="inferno")
         self.set_title("Left current depth")
 
         plt.subplot(3, 2, 4)
         depth_image = right_current_depth[0].detach().cpu().permute(1, 2, 0).numpy()[:, :, 0]
-        plt.imshow(np.clip(depth_image, 0, 100) / 100, cmap="inferno")
+        plt.imshow(np.clip(1.0 / depth_image, 0, 100) / 100, cmap="inferno")
         self.set_title("Right current depth")
 
         plt.subplot(3, 2, 5)

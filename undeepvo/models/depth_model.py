@@ -52,8 +52,8 @@ class LastUpBlock(nn.Module):
         self.convs = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
             nn.ReLU(),
-            nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
-            nn.ReLU(),
+            nn.Conv2d(out_channels, 1, kernel_size=1, padding=0),
+            #nn.ReLU(),
         )
 
     def forward(self, x):
@@ -89,7 +89,7 @@ class DepthNet(nn.Module):
         ])
 
         self.last_up = LastUpBlock(n_base_channels // 2, 32)
-        self._last_conv = nn.Conv2d(32, 1, 1)
+#        self._last_conv = nn.Conv2d(32, 1, 1)
 
     def forward(self, x):
 
@@ -105,7 +105,7 @@ class DepthNet(nn.Module):
             out = block(out, outputs_before_pooling[-i - 2])
 
         out = self.last_up(out)
-        out = self._last_conv(out)
+        #out = self._last_conv(out)
 
         if not self.inverse_sigmoid:
             out = self.min_depth + torch.sigmoid(out) * (self.max_depth - self.min_depth)
