@@ -11,7 +11,8 @@ from .temporal_photometric_consistency_loss import TemporalPhotometricConsistenc
 class SpatialLosses(torch.nn.Module):
     def __init__(self, camera_baseline, focal_length, left_camera_matrix, right_camera_matrix,
                  transform_from_left_to_right, lambda_position, lambda_angle,
-                 lambda_s=0.85, lambda_disparity=0.85, lambda_depth=0.85, window_size=11, reduction: str = "mean", max_val: float = 1.0):
+                 lambda_s=0.85, lambda_disparity=0.85, lambda_smoothness=0.85, window_size=11, reduction: str = "mean",
+                 max_val: float = 1.0):
         super().__init__()
         self.baseline = camera_baseline
         self.focal_length = focal_length
@@ -38,7 +39,7 @@ class SpatialLosses(torch.nn.Module):
         self.disparity_consistency_loss = DisparityConsistencyLoss(self.Bf, self.left_camera_matrix,
                                                                    self.right_camera_matrix,
                                                                    self.transform_from_left_to_right, lambda_disparity)
-        self.inverse_depth_smoothness_loss = InverseDepthSmoothnessLoss(lambda_depth)
+        self.inverse_depth_smoothness_loss = InverseDepthSmoothnessLoss(lambda_smoothness)
 
         self.pose_loss = PoseLoss(self.lambda_position, self.lambda_angle,
                                   self.transform_from_left_to_right)
@@ -49,9 +50,11 @@ class SpatialLosses(torch.nn.Module):
         photometric_consistency_loss = self.photometric_consistency_loss(left_current_image, right_current_image,
                                                                          left_current_depth, right_current_depth)
         disparity_consistency_loss = self.disparity_consistency_loss(left_current_depth, right_current_depth)
-        inverse_depth_smoothness_loss = self.inverse_depth_smoothness_loss(left_current_depth, left_current_image, right_current_depth, right_current_image)
+        inverse_depth_smoothness_loss = self.inverse_depth_smoothness_loss(left_current_depth, left_current_image,
+                                                                           right_current_depth, right_current_image)
         pose_loss = self.pose_loss(left_position, right_position, left_angle, right_angle)
-        return (photometric_consistency_loss + disparity_consistency_loss + inverse_depth_smoothness_loss + pose_loss, photometric_consistency_loss,
+        return (photometric_consistency_loss + disparity_consistency_loss + inverse_depth_smoothness_loss + pose_loss,
+                photometric_consistency_loss,
                 disparity_consistency_loss, inverse_depth_smoothness_loss, pose_loss)
 
 

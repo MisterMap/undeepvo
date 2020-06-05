@@ -7,14 +7,15 @@ from .losses import SpatialLosses, TemporalImageLosses
 
 class UnsupervisedCriterion(nn.Module):
     def __init__(self, cameras_calibration: CamerasCalibration, lambda_position, lambda_angle, lambda_s,
-                 lambda_disparity=0.01, lambda_registration=0.01):
+                 lambda_disparity=0.01, lambda_registration=0.01, lambda_smoothness=1.0):
         super(UnsupervisedCriterion, self).__init__()
         self.spatial_losses = SpatialLosses(cameras_calibration.camera_baseline,
                                             cameras_calibration.focal_length,
                                             cameras_calibration.left_camera_matrix,
                                             cameras_calibration.right_camera_matrix,
                                             cameras_calibration.transform_from_left_to_right,
-                                            lambda_position, lambda_angle, lambda_s, lambda_disparity)
+                                            lambda_position, lambda_angle, lambda_s, lambda_disparity,
+                                            lambda_smoothness)
 
         self.temporal_losses = TemporalImageLosses(cameras_calibration.left_camera_matrix,
                                                    cameras_calibration.right_camera_matrix,
