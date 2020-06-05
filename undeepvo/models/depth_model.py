@@ -105,7 +105,7 @@ class DepthNet(nn.Module):
             out = block(out, outputs_before_pooling[-i - 2])
 
         out = self.last_up(out)
-        out = self._last_conv(out)
+        #out = self._last_conv(out)
 
         if not self.inverse_sigmoid:
             out = self.min_depth + torch.sigmoid(out) * (self.max_depth - self.min_depth)
