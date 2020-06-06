@@ -23,7 +23,7 @@ class TestPoseLoss(unittest.TestCase):
             print("Download dataset")
             sequence_8.download_sequence()
         dataset = pykitti.odometry(sequence_8.main_dir, sequence_8.sequence_id, frames=range(0, 3, 1))
-        dataset_manager = UnsupervisedDatasetManager(dataset, lenghts=(1, 1, 1), num_workers=WORKERS_COUNT)
+        dataset_manager = UnsupervisedDatasetManager(dataset, lengths=(1, 1, 1), num_workers=WORKERS_COUNT)
         camera0_from_camera2_transformation = dataset_manager.get_camera0_from_left_transformation()
         camera0_from_camera3_transformation = dataset_manager.get_camera0_from_right_transformation()
         angles = torch.tensor([[1., 1., 1.]]).cuda()
