@@ -45,7 +45,7 @@ class TestSupervisedDepthProblem(unittest.TestCase):
         dataset = GroundTruthDataset(length=260)
         print (dataset._names)
         lengths = (200, 30, 30)
-        dataset_manager = SupervisedDatasetManager(dataset, lenghts=lengths, num_workers=WORKERS_COUNT)
+        dataset_manager = SupervisedDatasetManager(dataset, lengths=lengths, num_workers=WORKERS_COUNT)
         model = DepthNet(max_depth=2., min_depth=1.0).cuda()
         optimizer_manger = OptimizerManager()
         criterion = SupervisedCriterion(0.01)

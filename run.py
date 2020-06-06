@@ -106,7 +106,7 @@ MAIN_DIR = args.main_dir
 lengths = args.split
 if args.method == "unsupervised":
     dataset = pykitti.odometry(MAIN_DIR, '08', frames=range(*args.frames_range))
-    dataset_manager = UnsupervisedDatasetManager(dataset, lenghts=lengths)
+    dataset_manager = UnsupervisedDatasetManager(dataset, lengths=lengths)
 
     model = UnDeepVO(args.max_depth).cuda()
 
@@ -124,7 +124,7 @@ if args.method == "unsupervised":
 
 elif args.method == "supervised":
     dataset = GroundTruthDataset(length=lengths)
-    dataset_manager = SupervisedDatasetManager(dataset, lenghts=lengths)
+    dataset_manager = SupervisedDatasetManager(dataset, lengths=lengths)
 
     model = DepthNet(args.max_depth).cuda()
 

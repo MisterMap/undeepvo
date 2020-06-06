@@ -8,10 +8,10 @@ from undeepvo.data.cameras_calibration import CamerasCalibration
 
 
 class SupervisedDatasetManager(DatasetManager):
-    def __init__(self, kitti_dataset, num_workers=4, lenghts=(80, 10, 10), final_img_size=(128, 384),
+    def __init__(self, kitti_dataset, num_workers=4, lengths=(80, 10, 10), final_img_size=(128, 384),
                  transform_params={"filters": True, "normalize": False}):
         dataset = MonoDepthDataset(dataset=kitti_dataset)
-        train, val, test = random_split(dataset, lenghts)
+        train, val, test = random_split(dataset, lengths)
         self._num_workers = num_workers
         super().__init__(train, val, test)
         self._transform = DataTransformManager(self._train_dataset.dataset.get_image_size(), final_img_size,

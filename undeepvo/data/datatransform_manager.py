@@ -16,13 +16,19 @@ class DataTransformManager:
         self._normalize_transform = albumentations.Normalize()
         self._normalize_no_transform = albumentations.Normalize(mean=(0, 0, 0), std=(1, 1, 1))
         self._train_compose = self._scale_compose
-        if transform_params["filters"]:
-            self._train_compose = [
-                                      albumentations.RandomBrightnessContrast(brightness_limit=(-0.1, 0.1),
-                                                                              contrast_limit=(-0.1, 0.1), p=0.2),
-                                      albumentations.RandomGamma(gamma_limit=(90, 110), p=0.2),
-                                      albumentations.ChannelShuffle(p=0.2),
-                                  ] + self._scale_compose
+        if "flip" in transform_params:
+            if transform_params["flip"]:
+                self._train_compose = [
+                                          albumentations.HorizontalFlip()
+                                      ] + self._train_compose
+        if "filters" in transform_params:
+            if transform_params["filters"]:
+                self._train_compose = [
+                                          albumentations.RandomBrightnessContrast(brightness_limit=(-0.2, 0.2),
+                                                                                  contrast_limit=(-0.2, 0.2), p=0.5),
+                                          albumentations.RandomGamma(gamma_limit=(90, 110), p=0.5),
+                                          albumentations.ChannelShuffle(p=0.5),
+                                      ] + self._train_compose
 
         if transform_params["normalize"]:
             self._train_compose.append(albumentations.Normalize())
