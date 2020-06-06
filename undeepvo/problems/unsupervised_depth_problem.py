@@ -19,10 +19,14 @@ class UnsupervisedDepthProblem(Problem):
         self._use_truth_poses = use_truth_poses
 
     def evaluate_batch(self, batch):
-        left_current_output = ResultDataPoint(batch["left_current_image"].to(self._device)).apply_model(self._model)
-        right_current_output = ResultDataPoint(batch["right_current_image"].to(self._device)).apply_model(self._model)
-        left_next_output = ResultDataPoint(batch["left_next_image"].to(self._device)).apply_model(self._model)
-        right_next_output = ResultDataPoint(batch["right_next_image"].to(self._device)).apply_model(self._model)
+        left_current_output = ResultDataPoint(batch["left_current_image"].to(self._device),
+                                              batch["left_next_image"].to(self._device)).apply_model(self._model)
+        right_current_output = ResultDataPoint(batch["right_current_image"].to(self._device),
+                                               batch["right_next_image"].to(self._device)).apply_model(self._model)
+        left_next_output = ResultDataPoint(batch["left_next_image"].to(self._device),
+                                           batch["left_current_image"].to(self._device)).apply_model(self._model)
+        right_next_output = ResultDataPoint(batch["right_next_image"].to(self._device),
+                                            batch["right_current_image"].to(self._device)).apply_model(self._model)
         if self._use_truth_poses:
             poses = self._calculate_truth_poses(batch["current_position"].to(self._device),
                                                 batch["current_angle"].to(self._device),
