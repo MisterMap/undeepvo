@@ -5,7 +5,7 @@
 
 import argparse
 import os
-
+import torch
 import pykitti.odometry
 
 from undeepvo.criterion import UnsupervisedCriterion, SupervisedCriterion
@@ -126,6 +126,16 @@ parser.add_argument('-resnet',
                     type=bool,
                     help='whether to use resnet or not')
 
+parser.add_argument('-device',
+                    default="cuda:0",
+                    type=str,
+                    help='whether to use resnet or not')
+
+parser.add_argument('-model_path',
+                    default="",
+                    type=str,
+                    help='whether to use resnet or not')
+
 args = parser.parse_args()
 
 MAIN_DIR = args.main_dir
@@ -139,9 +149,11 @@ if args.method == "unsupervised":
     dataset = pykitti.odometry(MAIN_DIR, '08', frames=range(*args.frames_range))
     dataset_manager = UnsupervisedDatasetManager(dataset, lenghts=lengths)
 
-    model = UnDeepVO(args.max_depth, args.min_depth, args.resnet).cuda()
+    model = UnDeepVO(args.max_depth, args.min_depth, args.resnet).to(args.device)
 
-    criterion = UnsupervisedCriterion(dataset_manager.get_cameras_calibration("cuda:0"),
+    if args.model_path != "":
+        model.load_state_dict(torch.load(args.model_path, map_location=args.device))
+    criterion = UnsupervisedCriterion(dataset_manager.get_cameras_calibration(args.device),
                                       args.lambda_position,
                                       args.lambda_rotation,
                                       args.lambda_s,
@@ -159,10 +171,11 @@ if args.method == "unsupervised":
                                                         "batch_size": args.batch_size,
                                                         "betta2": args.betta2,
                                                         "betta1": args.betta1,
-                                                        "min_depth": args.min_depth})
+                                                        "min_depth": args.min_depth,
+                                                        "lambda_registration": args.lambda_registration})
     optimizer_manager = OptimizerManager(lr=args.lr, betas=(args.betta1, args.betta2))
     problem = UnsupervisedDepthProblem(model, criterion, optimizer_manager, dataset_manager, handler,
-                                       batch_size=args.batch_size, name="undeepvo")
+                                       batch_size=args.batch_size, name="undeepvo", device=args.device)
 
 elif args.method == "supervised":
     dataset = GroundTruthDataset(length=lengths)
