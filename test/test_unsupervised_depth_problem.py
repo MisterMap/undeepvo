@@ -57,3 +57,20 @@ class TestUnsupervisedDepthProblem(unittest.TestCase):
         problem = UnsupervisedDepthProblem(model, criterion, optimizer_manger, dataset_manager, handler,
                                            batch_size=1)
         problem.train(1)
+
+    def test_unsupervised_depth_problem_truth_positions(self):
+        sequence_8 = Downloader('08')
+        if not os.path.exists("./dataset/poses"):
+            print("Download dataset")
+            sequence_8.download_sequence()
+        lengths = (200, 30, 30)
+        dataset = pykitti.odometry(sequence_8.main_dir, sequence_8.sequence_id, frames=range(0, 260, 1))
+        dataset_manager = DatasetManagerMock(dataset, lenghts=lengths, num_workers=WORKERS_COUNT)
+        model = UnDeepVO(max_depth=2., min_depth=1.0).cuda()
+        optimizer_manger = OptimizerManager()
+        criterion = UnsupervisedCriterion(dataset_manager.get_cameras_calibration("cuda:0"),
+                                          0.1, 1, 0.85)
+        handler = TrainingProcessHandler(mlflow_tags={"name": "test"})
+        problem = UnsupervisedDepthProblem(model, criterion, optimizer_manger, dataset_manager, handler,
+                                           batch_size=1, use_truth_poses=True)
+        problem.train(1)

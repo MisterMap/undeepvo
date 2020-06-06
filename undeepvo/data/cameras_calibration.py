@@ -11,4 +11,4 @@ class CamerasCalibration(object):
                                                           (0, 1, 0, 0),
                                                           (0, 0, 1, 0),
                                                           (0, 0, 0, 1)))[None].to(device).float()
-        self.transform_from_left_to_right[0, 0, 3] = self.camera_baseline
+        self.transform_from_left_to_right[0, 0, 3] = -self.camera_baseline

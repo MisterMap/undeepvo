@@ -1,22 +1,16 @@
-import kornia
 import torch
+import torch.nn as nn
 
 from undeepvo.utils.math import generate_relative_transformation
+import kornia
 
 
-class TemporalPhotometricConsistencyLoss(torch.nn.Module):
-    def __init__(self, camera_matrix, right_camera_matrix,
-                 lambda_s=0.85, window_size=11, reduction: str = "mean",
-                 max_val: float = 1.0):
+class GeometricRegistrationLoss(torch.nn.Module):
+    def __init__(self, registration_lambda, camera_matrix):
         super().__init__()
+        self._loss = nn.L1Loss()
+        self._registration_lambda = registration_lambda
         self.camera_matrix = camera_matrix
-        self.lambda_s = lambda_s
-        self.ssim_loss = kornia.losses.SSIM(window_size=window_size, reduction=reduction, max_val=max_val)
-        self.l1_loss = torch.nn.L1Loss()
-
-    def calculate_loss(self, image1, image2):
-        loss = self.lambda_s * self.ssim_loss(image1, image2) + (1 - self.lambda_s) * self.l1_loss(image1, image2)
-        return loss
 
     def generate_next_image(self, current_image, next_depth, transformation_from_next_to_current):
         generated_next_image = kornia.warp_frame_depth(current_image,
@@ -32,23 +26,22 @@ class TemporalPhotometricConsistencyLoss(torch.nn.Module):
                                                           self.camera_matrix)
         return generated_current_image
 
-    def forward(self, current_image, next_image, current_depth, next_depth,
-                current_position, current_angle, next_position, next_angle):
-        transformation_from_next_to_current = generate_relative_transformation(current_position,
+    def forward(self, current_depth, next_depth, current_position, next_position, current_angle, next_angle):
+        transformation_from_current_to_next = generate_relative_transformation(current_position,
                                                                                current_angle,
                                                                                next_position,
                                                                                next_angle)
-        transformation_from_current_to_next = generate_relative_transformation(next_position,
+        transformation_from_next_to_current = generate_relative_transformation(next_position,
                                                                                next_angle,
                                                                                current_position,
                                                                                current_angle)
-
-        generated_next_image = self.generate_next_image(current_image, next_depth,
+        generated_next_depth = self.generate_next_image(current_depth, next_depth,
                                                         transformation_from_next_to_current)
 
-        generated_current_image = self.generate_current_image(next_image, current_depth,
+        generated_current_depth = self.generate_current_image(next_depth, current_depth,
                                                               transformation_from_current_to_next)
 
-        next_loss = self.calculate_loss(generated_next_image, next_image)
-        current_loss = self.calculate_loss(generated_current_image, current_image)
-        return (next_loss + current_loss) / 2
+        loss_previous = self._loss(generated_current_depth, current_depth)
+        loss_next = self._loss(generated_next_depth, next_depth)
+
+        return (loss_previous + loss_next) / 2 * self._registration_lambda

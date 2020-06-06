@@ -6,15 +6,32 @@ import numpy as np
 import torch
 
 from undeepvo.utils import Problem
+from undeepvo.utils.math import translate_pose
 from undeepvo.utils.result_data_point import ResultDataPoint
 
 
 class UnsupervisedDepthProblem(Problem):
+
+    def __init__(self, model: torch.nn.Module, criterion, optimizer_manager, dataset_manager, training_process_handler,
+                 device="cuda:0", name="", batch_size=128, use_truth_poses=False):
+        super().__init__(model, criterion, optimizer_manager, dataset_manager, training_process_handler, device, name,
+                         batch_size)
+        self._use_truth_poses = use_truth_poses
+
     def evaluate_batch(self, batch):
         left_current_output = ResultDataPoint(batch["left_current_image"].to(self._device)).apply_model(self._model)
         right_current_output = ResultDataPoint(batch["right_current_image"].to(self._device)).apply_model(self._model)
         left_next_output = ResultDataPoint(batch["left_next_image"].to(self._device)).apply_model(self._model)
         right_next_output = ResultDataPoint(batch["right_next_image"].to(self._device)).apply_model(self._model)
+        if self._use_truth_poses:
+            poses = self._calculate_truth_poses(batch["current_position"].to(self._device),
+                                                batch["current_angle"].to(self._device),
+                                                batch["next_position"].to(self._device),
+                                                batch["next_angle"].to(self._device))
+            left_current_output.update_pose(*poses[0])
+            right_current_output.update_pose(*poses[1])
+            left_next_output.update_pose(*poses[2])
+            right_next_output.update_pose(*poses[3])
         return self._criterion(left_current_output, right_current_output, left_next_output, right_next_output)
 
     def _train_step(self, batch):
@@ -23,7 +40,9 @@ class UnsupervisedDepthProblem(Problem):
         self._model.train()
 
         # Forward
-        loss, spatial_photometric_loss, disparity_loss, pose_loss, temporal_loss = self.evaluate_batch(batch)
+        loss, spatial_photometric_loss, disparity_loss, depth_loss, pose_loss, temporal_loss, registration_loss \
+            = self.evaluate_batch(
+            batch)
 
         # Backward
         loss.backward()
@@ -31,26 +50,35 @@ class UnsupervisedDepthProblem(Problem):
         end_time = time.time()
         return {"loss": loss.item(), "time": end_time - start_time,
                 "spat_photo_loss": spatial_photometric_loss.item(), "disparity_loss": disparity_loss.item(),
+                "depth_loss": depth_loss.item(),
                 "pose_loss": pose_loss.item(),
-                "temporal_loss": temporal_loss.item()}
+                "temporal_loss": temporal_loss.item(),
+                "registration_loss": registration_loss.item()}
 
     def evaluate_batches(self, batches):
         self._model.eval()
-        total_loss, total_spatial_photometric_loss, total_disparity_loss, total_pose_loss = 0, 0, 0, 0
+        total_loss, total_spatial_photometric_loss, total_disparity_loss, total_inverse_depth_smoothness_loss, total_pose_loss = 0, 0, 0, 0, 0
         total_temporal_loss = 0
+        total_registration_loss = 0
         with torch.no_grad():
             for batch in batches:
-                loss, spatial_photometric_loss, disparity_loss, pose_loss, temporal_loss = self.evaluate_batch(batch)
+                loss, spatial_photometric_loss, disparity_loss, inverse_depth_smoothness_loss, pose_loss, temporal_loss, registration_loss \
+                    = self.evaluate_batch(
+                    batch)
                 total_loss += loss.item()
                 total_disparity_loss += disparity_loss.item()
+                total_inverse_depth_smoothness_loss += inverse_depth_smoothness_loss.item()
                 total_pose_loss += pose_loss.item()
                 total_spatial_photometric_loss += spatial_photometric_loss.item()
                 total_temporal_loss += temporal_loss.item()
+                total_registration_loss += registration_loss.item()
         return {"loss": total_loss / len(batches),
                 "disparity_loss": total_disparity_loss / len(batches),
+                "inverse_depth_smoothness_loss": total_inverse_depth_smoothness_loss / len(batches),
                 "pose_loss": total_pose_loss / len(batches),
                 "spat_photo_loss": total_spatial_photometric_loss / len(batches),
-                "temporal_loss": total_temporal_loss / len(batches)}
+                "temporal_loss": total_temporal_loss / len(batches),
+                "registration_loss": total_registration_loss / len(batches)}
 
     def get_additional_data(self):
         return {"figures": {**self._get_depth_figure(), **self._get_synthesized_image()}}
@@ -65,7 +93,7 @@ class UnsupervisedDepthProblem(Problem):
         image = self._dataset_manager.get_validation_dataset(with_normalize=False)[0]["left_current_image"]
         raw_image = image.cpu().permute(1, 2, 0).detach().numpy()
         self.fill_in_axis(axes[0], raw_image, "Left current image")
-        self.fill_in_axis(axes[1], depth_image, "Left current depth", depth=True)
+        self.fill_in_axis(axes[1], 1.0/depth_image, "Left current depth", depth=True)
         figure.tight_layout()
         return {"depth": figure}
 
@@ -82,12 +110,12 @@ class UnsupervisedDepthProblem(Problem):
         with torch.no_grad():
             generated_left_image = kornia.warp_frame_depth(right_current_image,
                                                            left_current_depth,
-                                                           torch.inverse(
-                                                               cameras_calibration.transform_from_left_to_right),
+                                                           cameras_calibration.transform_from_left_to_right,
                                                            cameras_calibration.left_camera_matrix)
             generated_right_image = kornia.warp_frame_depth(left_current_image,
                                                             right_current_depth,
-                                                            cameras_calibration.transform_from_left_to_right,
+                                                            torch.inverse(
+                                                                cameras_calibration.transform_from_left_to_right),
                                                             cameras_calibration.left_camera_matrix)
 
         figure = plt.figure(dpi=200, figsize=(9, 6))
@@ -104,12 +132,12 @@ class UnsupervisedDepthProblem(Problem):
 
         plt.subplot(3, 2, 3)
         depth_image = left_current_depth[0].detach().cpu().permute(1, 2, 0).numpy()[:, :, 0]
-        plt.imshow(np.clip(depth_image, 0, 100) / 100, cmap="inferno")
+        plt.imshow(np.clip(1.0 / depth_image, 0, 100) / 100, cmap="inferno")
         self.set_title("Left current depth")
 
         plt.subplot(3, 2, 4)
         depth_image = right_current_depth[0].detach().cpu().permute(1, 2, 0).numpy()[:, :, 0]
-        plt.imshow(np.clip(depth_image, 0, 100) / 100, cmap="inferno")
+        plt.imshow(np.clip(1.0 / depth_image, 0, 100) / 100, cmap="inferno")
         self.set_title("Right current depth")
 
         plt.subplot(3, 2, 5)
@@ -138,3 +166,19 @@ class UnsupervisedDepthProblem(Problem):
         axis.set_title(caption)
         axis.set_xticks([])
         axis.set_yticks([])
+
+    def _calculate_truth_poses(self, current_position, current_angle, next_position, next_angle):
+        camera0_from_camera2_transformation = self._dataset_manager.get_camera0_from_left_transformation(self._device)
+        camera0_from_camera3_transformation = self._dataset_manager.get_camera0_from_right_transformation(self._device)
+        current_left_position = translate_pose(current_position, current_angle,
+                                               camera0_from_camera2_transformation[:, :3, 3])
+        current_right_position = translate_pose(current_position, current_angle,
+                                                camera0_from_camera3_transformation[:, :3, 3])
+        next_left_position = translate_pose(next_position, next_angle,
+                                            camera0_from_camera2_transformation[:, :3, 3])
+        next_right_position = translate_pose(next_position, next_angle,
+                                             camera0_from_camera3_transformation[:, :3, 3])
+        return ((current_left_position, current_angle),
+                (current_right_position, current_angle),
+                (next_left_position, next_angle),
+                (next_right_position, next_angle))
