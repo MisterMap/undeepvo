@@ -6,7 +6,6 @@ import numpy as np
 import torch
 
 from undeepvo.utils import Problem
-from undeepvo.utils.math import translate_pose
 from undeepvo.utils.result_data_point import ResultDataPoint
 
 
@@ -28,14 +27,14 @@ class UnsupervisedDepthProblem(Problem):
         right_next_output = ResultDataPoint(batch["right_next_image"].to(self._device),
                                             batch["right_current_image"].to(self._device)).apply_model(self._model)
         if self._use_truth_poses:
-            poses = self._calculate_truth_poses(batch["current_position"].to(self._device),
-                                                batch["current_angle"].to(self._device),
-                                                batch["next_position"].to(self._device),
-                                                batch["next_angle"].to(self._device))
-            left_current_output.update_pose(*poses[0])
-            right_current_output.update_pose(*poses[1])
-            left_next_output.update_pose(*poses[2])
-            right_next_output.update_pose(*poses[3])
+            left_current_output.update_pose(batch["delta_position"].to(self._device),
+                                            batch["delta_angle"].to(self._device))
+            right_current_output.update_pose(batch["delta_position"].to(self._device),
+                                             batch["delta_angle"].to(self._device))
+            left_next_output.update_pose(batch["inverse_delta_position"].to(self._device),
+                                         batch["inverse_delta_angle"].to(self._device))
+            right_next_output.update_pose(batch["inverse_delta_position"].to(self._device),
+                                          batch["inverse_delta_angle"].to(self._device))
         return self._criterion(left_current_output, right_current_output, left_next_output, right_next_output)
 
     def _train_step(self, batch):
@@ -97,7 +96,7 @@ class UnsupervisedDepthProblem(Problem):
         image = self._dataset_manager.get_validation_dataset(with_normalize=False)[0]["left_current_image"]
         raw_image = image.cpu().permute(1, 2, 0).detach().numpy()
         self.fill_in_axis(axes[0], raw_image, "Left current image")
-        self.fill_in_axis(axes[1], 1.0/depth_image, "Left current depth", depth=True)
+        self.fill_in_axis(axes[1], 1.0 / depth_image, "Left current depth", depth=True)
         figure.tight_layout()
         return {"depth": figure}
 
@@ -170,19 +169,3 @@ class UnsupervisedDepthProblem(Problem):
         axis.set_title(caption)
         axis.set_xticks([])
         axis.set_yticks([])
-
-    def _calculate_truth_poses(self, current_position, current_angle, next_position, next_angle):
-        camera0_from_camera2_transformation = self._dataset_manager.get_camera0_from_left_transformation(self._device)
-        camera0_from_camera3_transformation = self._dataset_manager.get_camera0_from_right_transformation(self._device)
-        current_left_position = translate_pose(current_position, current_angle,
-                                               camera0_from_camera2_transformation[:, :3, 3])
-        current_right_position = translate_pose(current_position, current_angle,
-                                                camera0_from_camera3_transformation[:, :3, 3])
-        next_left_position = translate_pose(next_position, next_angle,
-                                            camera0_from_camera2_transformation[:, :3, 3])
-        next_right_position = translate_pose(next_position, next_angle,
-                                             camera0_from_camera3_transformation[:, :3, 3])
-        return ((current_left_position, current_angle),
-                (current_right_position, current_angle),
-                (next_left_position, next_angle),
-                (next_right_position, next_angle))
