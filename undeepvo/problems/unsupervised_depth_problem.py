@@ -16,6 +16,7 @@ class UnsupervisedDepthProblem(Problem):
         super().__init__(model, criterion, optimizer_manager, dataset_manager, training_process_handler, device, name,
                          batch_size)
         self._use_truth_poses = use_truth_poses
+        self._result = None
 
     def evaluate_batch(self, batch):
         left_current_output = ResultDataPoint(batch["left_current_image"].to(self._device),
@@ -35,6 +36,7 @@ class UnsupervisedDepthProblem(Problem):
                                          batch["inverse_delta_angle"].to(self._device))
             right_next_output.update_pose(batch["inverse_delta_position"].to(self._device),
                                           batch["inverse_delta_angle"].to(self._device))
+        self._result = (left_current_output, right_current_output, left_next_output, right_next_output)
         return self._criterion(left_current_output, right_current_output, left_next_output, right_next_output)
 
     def _train_step(self, batch):
@@ -63,10 +65,11 @@ class UnsupervisedDepthProblem(Problem):
         total_inverse_depth_smoothness_loss, total_pose_loss = 0, 0
         total_temporal_loss = 0
         total_registration_loss = 0
+        total_relative_pose_error = 0
         with torch.no_grad():
             for batch in batches:
                 loss, spatial_photometric_loss, disparity_loss, inverse_depth_smoothness_loss, pose_loss, \
-                    temporal_loss, registration_loss = self.evaluate_batch(batch)
+                temporal_loss, registration_loss = self.evaluate_batch(batch)
                 total_loss += loss.item()
                 total_disparity_loss += disparity_loss.item()
                 total_inverse_depth_smoothness_loss += inverse_depth_smoothness_loss.item()
@@ -74,13 +77,23 @@ class UnsupervisedDepthProblem(Problem):
                 total_spatial_photometric_loss += spatial_photometric_loss.item()
                 total_temporal_loss += temporal_loss.item()
                 total_registration_loss += registration_loss.item()
+                total_relative_pose_error += self._calculate_relative_pose_error(batch).item()
         return {"loss": total_loss / len(batches),
                 "disparity_loss": total_disparity_loss / len(batches),
                 "inverse_depth_smoothness_loss": total_inverse_depth_smoothness_loss / len(batches),
                 "pose_loss": total_pose_loss / len(batches),
                 "spat_photo_loss": total_spatial_photometric_loss / len(batches),
                 "temporal_loss": total_temporal_loss / len(batches),
-                "registration_loss": total_registration_loss / len(batches)}
+                "registration_loss": total_registration_loss / len(batches),
+                "rpe": total_relative_pose_error / len(batches)}
+
+    def _calculate_relative_pose_error(self, batch):
+        error = self._criterion.calculate_relative_pose_error(*self._result,
+                                                              batch["delta_position"].to(self._device),
+                                                              batch["delta_angle"].to(self._device),
+                                                              batch["inverse_delta_position"].to(self._device),
+                                                              batch["inverse_delta_angle"].to(self._device))
+        return torch.mean(error)
 
     def get_additional_data(self):
         return {"figures": {**self._get_depth_figure(), **self._get_synthesized_image()}}
