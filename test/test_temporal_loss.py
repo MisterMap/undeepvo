@@ -45,8 +45,8 @@ class TestTemporalLoss(unittest.TestCase):
         camera_baseline = 176
         self.cameras_calibration = CamerasCalibration(camera_baseline, camera_matrix, camera_matrix, device)
         self.lambda_s = 0.85
-        self.current_position = torch.tensor([[-200, 0, 0]]).to(device).float()
-        self.next_position = torch.tensor([[-200 + camera_baseline, 0, 0]]).to(device).float()
+        self.current_position = torch.tensor([[camera_baseline, 0, 0]]).to(device).float()
+        self.next_position = torch.tensor([[-camera_baseline, 0, 0]]).to(device).float()
         self.current_angle = torch.tensor([[0, 0, 0]]).to(device).float()
         self.next_angle = torch.tensor([[0, 0, 0]]).to(device).float()
 

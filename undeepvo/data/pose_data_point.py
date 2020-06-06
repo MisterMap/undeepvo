@@ -12,6 +12,8 @@ class PoseDataPoint:
         self._next_angle_name = "next_angle"
         self._delta_position_name = "delta_position"
         self._delta_angle_name = "delta_angle"
+        self._inverse_delta_position_name = "inverse_delta_position"
+        self._inverse_delta_angle_name = "inverse_delta_angle"
         self._current_transformation_name = "current_transformation"
         self._next_transformation_name = "next_transformation"
 
@@ -25,11 +27,15 @@ class PoseDataPoint:
         self._current_position = torch.from_numpy(current_matrix[:3, 3]).float()
         self._next_position = torch.from_numpy(next_matrix[:3, 3]).float()
 
-        delta_matrix = kornia.relative_transformation(torch.from_numpy(current_matrix.astype('float32')),
-                                                      torch.from_numpy(next_matrix.astype('float32')))
-        rotation_matrix = delta_matrix[:3, :3].reshape(1, 3, 3).clone()
-        self._delta_angle = kornia.rotation_matrix_to_angle_axis(rotation_matrix).permute(1, 0).squeeze()
-        self._delta_position = delta_matrix[:3, 3]
+        delta_matrix = np.linalg.inv(current_matrix).dot(next_matrix)
+        delta_angles = numpy_euler_angles_from_rotation_matrix(delta_matrix[:3, :3]).astype('float32')
+        self._delta_angle = torch.from_numpy(delta_angles)
+        self._delta_position = torch.from_numpy(delta_matrix[:3, 3]).float()
+
+        inverse_delta_matrix = np.linalg.inv(next_matrix).dot(current_matrix)
+        inverse_delta_angles = numpy_euler_angles_from_rotation_matrix(inverse_delta_matrix[:3, :3]).astype('float32')
+        self._inverse_delta_angle = torch.from_numpy(inverse_delta_angles)
+        self._inverse_delta_position = torch.from_numpy(inverse_delta_matrix[:3, 3]).float()
 
     def get_current_position(self):
         return {self._current_position_name: self._current_position}
@@ -49,6 +55,12 @@ class PoseDataPoint:
     def get_delta_angle(self):
         return {self._delta_angle_name: self._delta_angle}
 
+    def get_inverse_delta_angle(self):
+        return {self._inverse_delta_angle_name: self._inverse_delta_angle}
+
+    def get_inverse_delta_position(self):
+        return {self._inverse_delta_position_name: self._inverse_delta_position}
+
     def get_current_state(self):
         """
         :return: dictionary in format position, angle
@@ -65,7 +77,8 @@ class PoseDataPoint:
         """
         :return: dictionary in format position, angle
         """
-        return {**self.get_delta_position(), **self.get_delta_angle()}
+        return {**self.get_delta_position(), **self.get_delta_angle(),
+                **self.get_inverse_delta_angle(), **self.get_inverse_delta_position()}
 
     def get_current_transformation(self):
         return {self._current_transformation_name: self._current_transformation}

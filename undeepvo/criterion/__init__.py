@@ -5,3 +5,4 @@ from .spatial_photometric_consistency_loss import SpatialPhotometricConsistencyL
 from .temporal_photometric_consistency_loss import TemporalPhotometricConsistencyLoss
 from .unsupervised_criterion import UnsupervisedCriterion
 from .supervised_criterion import SupervisedCriterion
+from .pose_metric import PoseMetric

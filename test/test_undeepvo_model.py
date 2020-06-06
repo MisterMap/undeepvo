@@ -13,7 +13,7 @@ class TestUnDeepVO(unittest.TestCase):
         self.assertEqual(output.shape, torch.Size([2, 1, 384, 128]))
         self.assertTrue(torch.all(output > 0))
         input_data = torch.rand(2, 3, 384, 128)
-        rotation, translation = model.pose_net(input_data)
+        rotation, translation = model.pose_net(input_data, input_data)
         self.assertEqual(rotation.shape, torch.Size([2, 3]))
         self.assertEqual(translation.shape, torch.Size([2, 3]))
 
@@ -24,7 +24,7 @@ class TestUnDeepVO(unittest.TestCase):
         self.assertEqual(output.shape, torch.Size([2, 1, 384, 128]))
         self.assertTrue(torch.all(output > 0))
         input_data = torch.rand(2, 3, 384, 128)
-        rotation, translation = model.pose_net(input_data)
+        rotation, translation = model.pose_net(input_data, input_data)
         self.assertEqual(rotation.shape, torch.Size([2, 3]))
         self.assertEqual(translation.shape, torch.Size([2, 3]))
 
@@ -35,6 +35,6 @@ class TestUnDeepVO(unittest.TestCase):
         self.assertEqual(output.shape, torch.Size([2, 1, 384, 128]))
         self.assertTrue(torch.all(output > 0))
         input_data = torch.rand(2, 3, 384, 128)
-        rotation, translation = model.pose_net(input_data)
+        rotation, translation = model.pose_net(input_data, input_data)
         self.assertEqual(rotation.shape, torch.Size([2, 3]))
         self.assertEqual(translation.shape, torch.Size([2, 3]))
