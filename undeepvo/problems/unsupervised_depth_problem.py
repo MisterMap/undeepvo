@@ -44,8 +44,7 @@ class UnsupervisedDepthProblem(Problem):
 
         # Forward
         loss, spatial_photometric_loss, disparity_loss, depth_loss, pose_loss, temporal_loss, registration_loss \
-            = self.evaluate_batch(
-            batch)
+            = self.evaluate_batch(batch)
 
         # Backward
         loss.backward()
@@ -60,14 +59,14 @@ class UnsupervisedDepthProblem(Problem):
 
     def evaluate_batches(self, batches):
         self._model.eval()
-        total_loss, total_spatial_photometric_loss, total_disparity_loss, total_inverse_depth_smoothness_loss, total_pose_loss = 0, 0, 0, 0, 0
+        total_loss, total_spatial_photometric_loss, total_disparity_loss = 0, 0, 0
+        total_inverse_depth_smoothness_loss, total_pose_loss = 0, 0
         total_temporal_loss = 0
         total_registration_loss = 0
         with torch.no_grad():
             for batch in batches:
-                loss, spatial_photometric_loss, disparity_loss, inverse_depth_smoothness_loss, pose_loss, temporal_loss, registration_loss \
-                    = self.evaluate_batch(
-                    batch)
+                loss, spatial_photometric_loss, disparity_loss, inverse_depth_smoothness_loss, pose_loss, \
+                    temporal_loss, registration_loss = self.evaluate_batch(batch)
                 total_loss += loss.item()
                 total_disparity_loss += disparity_loss.item()
                 total_inverse_depth_smoothness_loss += inverse_depth_smoothness_loss.item()
