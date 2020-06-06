@@ -172,7 +172,8 @@ if args.method == "unsupervised":
                                                         "betta2": args.betta2,
                                                         "betta1": args.betta1,
                                                         "min_depth": args.min_depth,
-                                                        "lambda_registration": args.lambda_registration})
+                                                        "lambda_registration": args.lambda_registration},
+                                     enable_iteration_progress_bar=True)
     optimizer_manager = OptimizerManager(lr=args.lr, betas=(args.betta1, args.betta2))
     problem = UnsupervisedDepthProblem(model, criterion, optimizer_manager, dataset_manager, handler,
                                        batch_size=args.batch_size, name="undeepvo", device=args.device)
