@@ -60,7 +60,7 @@ parser.add_argument('-max_depth',
                     help='max_depth value')
 
 parser.add_argument('-lambda_disparity',
-                    default=0.01,
+                    default=0.00,
                     type=float,
                     dest='lambda_disparity',
                     help='lambda_disparity loss value')
@@ -89,8 +89,8 @@ parser.add_argument('-lr',
                     dest='lr',
                     help='learning rate')
 
-parser.add_argument('-batch',
-                    default=5,
+parser.add_argument('-batch_size',
+                    default=4,
                     type=int,
                     dest='batch',
                     help='batch size')
@@ -100,27 +100,64 @@ parser.add_argument('-supervised_lambda',
                     type=float,
                     help='lambda os supervised method')
 
+parser.add_argument('-lambda_registration',
+                    default=1e-6,
+                    type=float,
+                    help='lambda registration parameter')
+
+parser.add_argument('-betta2',
+                    default=0.99,
+                    type=float,
+                    help='Adam optimizer parameter betta2')
+
+parser.add_argument('-betta1',
+                    default=0.9,
+                    type=float,
+                    help='Adam optimizer parameter betta1')
+
+parser.add_argument('-min_depth',
+                    default=1.0,
+                    type=float,
+                    help='minimal depth')
+
+parser.add_argument('-resnet',
+                    default=True,
+                    type=bool,
+                    help='whether to use resnet or not')
+
 args = parser.parse_args()
 
 MAIN_DIR = args.main_dir
 lengths = args.split
+problem = None
 if args.method == "unsupervised":
     dataset = pykitti.odometry(MAIN_DIR, '08', frames=range(*args.frames_range))
     dataset_manager = UnsupervisedDatasetManager(dataset, lenghts=lengths)
 
-    model = UnDeepVO(args.max_depth).cuda()
+    model = UnDeepVO(args.max_depth, args.min_depth, args.resnet).cuda()
 
     criterion = UnsupervisedCriterion(dataset_manager.get_cameras_calibration("cuda:0"),
-                                      args.lambda_position, args.lambda_rotation, args.lambda_s, args.lambda_disparity)
+                                      args.lambda_position,
+                                      args.lambda_rotation,
+                                      args.lambda_s,
+                                      args.lambda_disparity,
+                                      args.lambda_registration)
     handler = TrainingProcessHandler(enable_mlflow=True, mlflow_tags={"name": args.mlflow_tags_name},
-                                     mlflow_parameters={"image_step": args.frames_range[2], "max_depth": args.max_depth,
-                                                        "epoch": args.epoch, "lambda_position": args.lambda_position,
+                                     mlflow_parameters={"image_step": args.frames_range[2],
+                                                        "max_depth": args.max_depth,
+                                                        "epoch": args.epoch,
+                                                        "lambda_position": args.lambda_position,
                                                         "lambda_rotation": args.lambda_rotation,
                                                         "lambda_s": args.lambda_s,
-                                                        "lambda_disparity": args.lambda_disparity})
-    optimizer_manager = OptimizerManager(lr=args.lr)
+                                                        "lambda_disparity": args.lambda_disparity,
+                                                        "lr":args.lr,
+                                                        "batch_size": args.batch_size,
+                                                        "betta2": args.betta2,
+                                                        "betta1": args.betta1,
+                                                        "min_depth": args.min_depth})
+    optimizer_manager = OptimizerManager(lr=args.lr, betas=(args.betta1, args.betta2))
     problem = UnsupervisedDepthProblem(model, criterion, optimizer_manager, dataset_manager, handler,
-                                       batch_size=args.batch, name="undeepvo")
+                                       batch_size=args.batch_size, name="undeepvo")
 
 elif args.method == "supervised":
     dataset = GroundTruthDataset(length=lengths)
@@ -140,4 +177,5 @@ elif args.method == "supervised":
 else:
     exit("Unknown method")
 
-problem.train(args.epoch)
+if problem is not None:
+    problem.train(args.epoch)

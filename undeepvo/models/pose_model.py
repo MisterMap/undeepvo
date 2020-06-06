@@ -82,24 +82,32 @@ class VggBlock(nn.Module):
 
 
 class PoseNetResNet(nn.Module):
-    def __init__(self, n_base_channels=16, pretrained=True):
+    def __init__(self, n_base_channels=16, pretrained=True, input_images=2):
         super(PoseNetResNet, self).__init__()
-
-        self.resnet_part = nn.Sequential(*list(models.resnet18(pretrained=pretrained).children())[:-2])
+        self._first_layer = nn.Conv2d(3 * input_images, 64, kernel_size=(7, 7), stride=(2, 2),
+                                      padding=(3, 3), bias=False)
+        resnet = models.resnet18(pretrained=pretrained)
+        self.resnet_part = nn.Sequential(*list(resnet.children())[1:-2])
+        if pretrained:
+            loaded_weights = resnet.state_dict()["conv1.weight"]
+            loaded_weights = torch.cat([loaded_weights] * input_images, 1) / input_images
+            self._first_layer.load_state_dict({"weight": loaded_weights})
 
         self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
         self.flatten = nn.Flatten()
 
-        self.rot1 = nn.Linear(512 * 6 * 6 * 2, 512)
+        self.rot1 = nn.Linear(512 * 6 * 6, 512)
         self.rot2 = nn.Linear(512, 512)
         self.rot3 = nn.Linear(512, 3)
 
-        self.transl1 = nn.Linear(512 * 6 * 6 * 2, 512)
+        self.transl1 = nn.Linear(512 * 6 * 6, 512)
         self.transl2 = nn.Linear(512, 512)
         self.transl3 = nn.Linear(512, 3)
 
     def forward(self, target_frame, reference_frame):
-        x = torch.cat([self.resnet_part(target_frame), self.resnet_part(reference_frame)], dim=1)
+        x = torch.cat([target_frame, reference_frame], dim=1)
+        x = self._first_layer(x)
+        x = self.resnet_part(x)
         x = self.avgpool(x)
         out = self.flatten(x)
 

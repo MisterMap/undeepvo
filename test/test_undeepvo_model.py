@@ -19,6 +19,7 @@ class TestUnDeepVO(unittest.TestCase):
 
     def test_resnet_undeepvo(self):
         model = UnDeepVO(resnet=True)
+        print(model)
         input_data = torch.rand(2, 3, 384, 128)
         output = model.depth_net(input_data)
         self.assertEqual(output.shape, torch.Size([2, 1, 384, 128]))
