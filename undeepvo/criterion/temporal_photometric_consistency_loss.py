@@ -1,7 +1,7 @@
 import kornia
 import torch
 
-from undeepvo.utils.math import generate_relative_transformation
+from undeepvo.utils.math import generate_transformation
 
 
 class TemporalPhotometricConsistencyLoss(torch.nn.Module):
@@ -34,14 +34,8 @@ class TemporalPhotometricConsistencyLoss(torch.nn.Module):
 
     def forward(self, current_image, next_image, current_depth, next_depth,
                 current_position, current_angle, next_position, next_angle):
-        transformation_from_next_to_current = generate_relative_transformation(current_position,
-                                                                               current_angle,
-                                                                               next_position,
-                                                                               next_angle)
-        transformation_from_current_to_next = generate_relative_transformation(next_position,
-                                                                               next_angle,
-                                                                               current_position,
-                                                                               current_angle)
+        transformation_from_next_to_current = generate_transformation(current_position, current_angle)
+        transformation_from_current_to_next = generate_transformation(next_position, next_angle)
 
         generated_next_image = self.generate_next_image(current_image, next_depth,
                                                         transformation_from_next_to_current)

@@ -2,14 +2,15 @@ import torch
 
 
 class ResultDataPoint(object):
-    def __init__(self, input_image):
+    def __init__(self, input_image, reference_image):
         self.input_image = input_image
+        self.reference_image = reference_image
         self.depth = None
         self.rotation = None
         self.translation = None
 
     def apply_model(self, model):
-        depth, pose = model(self.normalize(self.input_image))
+        depth, pose = model(self.normalize(self.input_image), self.normalize(self.reference_image))
         self.depth = depth
         self.rotation = pose[0]
         self.translation = pose[1]

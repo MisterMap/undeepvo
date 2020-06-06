@@ -55,11 +55,11 @@ class TestLosses(unittest.TestCase):
 
         left_next_depth = model.depth(left_next_img).to(device)
         right_next_depth = model.depth(right_next_img).to(device)
-        left_current_rotation, left_current_position = model.pose(left_current_img)
-        right_current_rotation, right_current_position = model.pose(right_current_img)
+        left_current_rotation, left_current_position = model.pose(left_current_img, right_current_img)
+        right_current_rotation, right_current_position = model.pose(right_current_img, left_current_img)
 
-        left_next_rotation, left_next_position = model.pose(left_current_img)
-        right_next_rotation, right_next_position = model.pose(right_current_img)
+        left_next_rotation, left_next_position = model.pose(left_current_img, right_current_img)
+        right_next_rotation, right_next_position = model.pose(right_current_img, left_current_img)
 
         # transformtation matrix between two cameras
         src_trans_dst = torch.tensor(((1, 0, 0, 0),

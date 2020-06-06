@@ -22,9 +22,9 @@ class UnDeepVO(nn.Module):
         out = self.depth_net(x)
         return out
 
-    def pose(self, x):
-        (out_rotation, out_translation) = self.pose_net(x)
+    def pose(self, x, reference_frame):
+        (out_rotation, out_translation) = self.pose_net(x, reference_frame)
         return out_rotation, out_translation
 
-    def forward(self, x):
-        return self.depth(x), self.pose(x)
+    def forward(self, x, reference_frame):
+        return self.depth(x), self.pose(x, reference_frame)

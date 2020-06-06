@@ -3,6 +3,7 @@ import torch.nn as nn
 from undeepvo.data.cameras_calibration import CamerasCalibration
 from undeepvo.utils import ResultDataPoint
 from .losses import SpatialLosses, TemporalImageLosses
+from .pose_metric import PoseMetric
 
 
 class UnsupervisedCriterion(nn.Module):
@@ -20,6 +21,7 @@ class UnsupervisedCriterion(nn.Module):
         self.temporal_losses = TemporalImageLosses(cameras_calibration.left_camera_matrix,
                                                    cameras_calibration.right_camera_matrix,
                                                    lambda_s, lambda_registration)
+        self.pose_metric = PoseMetric()
 
     def forward(self, left_current_output: ResultDataPoint, right_current_output: ResultDataPoint,
                 left_next_output: ResultDataPoint, right_next_output: ResultDataPoint):
@@ -56,3 +58,21 @@ class UnsupervisedCriterion(nn.Module):
                 (current_pose_loss + next_pose_loss) / 2,
                 temporal_loss,
                 registration_loss)
+
+    def calculate_relative_pose_error(self, left_current_output: ResultDataPoint, right_current_output: ResultDataPoint,
+                                      left_next_output: ResultDataPoint, right_next_output: ResultDataPoint,
+                                      delta_position, delta_angle,
+                                      inverse_delta_position, inverse_delta_angle):
+        left_current_loss = self.pose_metric.calculate_relative_pose_error(left_current_output.translation,
+                                                                           left_current_output.rotation,
+                                                                           delta_position, delta_angle)
+        right_current_loss = self.pose_metric.calculate_relative_pose_error(right_current_output.translation,
+                                                                            right_current_output.rotation,
+                                                                            delta_position, delta_angle)
+        left_next_loss = self.pose_metric.calculate_relative_pose_error(left_next_output.translation,
+                                                                        left_next_output.rotation,
+                                                                        inverse_delta_position, inverse_delta_angle)
+        right_next_loss = self.pose_metric.calculate_relative_pose_error(right_next_output.translation,
+                                                                         right_next_output.rotation,
+                                                                         inverse_delta_position, inverse_delta_angle)
+        return (left_current_loss + right_current_loss + left_next_loss + right_next_loss) / 4
