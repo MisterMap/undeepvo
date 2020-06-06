@@ -1,19 +1,20 @@
-#!pip install --upgrade -q git+https://github.com/MisterMap/undeepvo.git@develop
+#!pip install --upgrade -q git+https://github.com/MisterMap/undeepvo.git
 # example: python3 train.py -epoch 10 -max_depth 100 -split 100 10 10 -frames_range 20 260 2
 # salloc -p gpu_big --mem 100Gb --gpus 4
 # python3 run.py -epoch 20 -max_depth 100 -split 3600 235 235 -frames_range 0 4070 1 -mlflow_tags_name Jhores_slurm
 
 import argparse
+import os
 
 import pykitti.odometry
 
 from undeepvo.criterion import UnsupervisedCriterion, SupervisedCriterion
+from undeepvo.data import Downloader
+from undeepvo.data.supervised import GroundTruthDataset
 from undeepvo.models import UnDeepVO, DepthNet
 from undeepvo.problems import UnsupervisedDatasetManager, UnsupervisedDepthProblem, SupervisedDatasetManager, \
     SupervisedDepthProblem
 from undeepvo.utils import OptimizerManager, TrainingProcessHandler
-
-from undeepvo.data.supervised import GroundTruthDataset
 
 parser = argparse.ArgumentParser(description='Run parameters')
 parser.add_argument('-method',
@@ -92,7 +93,7 @@ parser.add_argument('-lr',
 parser.add_argument('-batch_size',
                     default=4,
                     type=int,
-                    dest='batch',
+                    dest='batch_size',
                     help='batch size')
 
 parser.add_argument('-supervised_lambda',
@@ -131,6 +132,10 @@ MAIN_DIR = args.main_dir
 lengths = args.split
 problem = None
 if args.method == "unsupervised":
+    sequence_8 = Downloader('08')
+    if not os.path.exists("./dataset/poses"):
+        print("Download dataset")
+        sequence_8.download_sequence()
     dataset = pykitti.odometry(MAIN_DIR, '08', frames=range(*args.frames_range))
     dataset_manager = UnsupervisedDatasetManager(dataset, lenghts=lengths)
 
@@ -150,7 +155,7 @@ if args.method == "unsupervised":
                                                         "lambda_rotation": args.lambda_rotation,
                                                         "lambda_s": args.lambda_s,
                                                         "lambda_disparity": args.lambda_disparity,
-                                                        "lr":args.lr,
+                                                        "lr": args.lr,
                                                         "batch_size": args.batch_size,
                                                         "betta2": args.betta2,
                                                         "betta1": args.betta1,
