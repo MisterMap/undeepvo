@@ -1,19 +1,20 @@
-#!pip install --upgrade -q git+https://github.com/MisterMap/undeepvo.git@develop
+#!pip install --upgrade -q git+https://github.com/MisterMap/undeepvo.git
 # example: python3 train.py -epoch 10 -max_depth 100 -split 100 10 10 -frames_range 20 260 2
 # salloc -p gpu_big --mem 100Gb --gpus 4
 # python3 run.py -epoch 20 -max_depth 100 -split 3600 235 235 -frames_range 0 4070 1 -mlflow_tags_name Jhores_slurm
 
 import argparse
-
+import os
+import torch
 import pykitti.odometry
 
 from undeepvo.criterion import UnsupervisedCriterion, SupervisedCriterion
+from undeepvo.data import Downloader
+from undeepvo.data.supervised import GroundTruthDataset
 from undeepvo.models import UnDeepVO, DepthNet
 from undeepvo.problems import UnsupervisedDatasetManager, UnsupervisedDepthProblem, SupervisedDatasetManager, \
     SupervisedDepthProblem
 from undeepvo.utils import OptimizerManager, TrainingProcessHandler
-
-from undeepvo.data.supervised import GroundTruthDataset
 
 parser = argparse.ArgumentParser(description='Run parameters')
 parser.add_argument('-method',
@@ -60,7 +61,7 @@ parser.add_argument('-max_depth',
                     help='max_depth value')
 
 parser.add_argument('-lambda_disparity',
-                    default=0.01,
+                    default=0.00,
                     type=float,
                     dest='lambda_disparity',
                     help='lambda_disparity loss value')
@@ -89,10 +90,10 @@ parser.add_argument('-lr',
                     dest='lr',
                     help='learning rate')
 
-parser.add_argument('-batch',
-                    default=5,
+parser.add_argument('-batch_size',
+                    default=4,
                     type=int,
-                    dest='batch',
+                    dest='batch_size',
                     help='batch size')
 
 parser.add_argument('-supervised_lambda',
@@ -100,27 +101,82 @@ parser.add_argument('-supervised_lambda',
                     type=float,
                     help='lambda os supervised method')
 
+parser.add_argument('-lambda_registration',
+                    default=1e-6,
+                    type=float,
+                    help='lambda registration parameter')
+
+parser.add_argument('-betta2',
+                    default=0.99,
+                    type=float,
+                    help='Adam optimizer parameter betta2')
+
+parser.add_argument('-betta1',
+                    default=0.9,
+                    type=float,
+                    help='Adam optimizer parameter betta1')
+
+parser.add_argument('-min_depth',
+                    default=1.0,
+                    type=float,
+                    help='minimal depth')
+
+parser.add_argument('-resnet',
+                    default=True,
+                    type=bool,
+                    help='whether to use resnet or not')
+
+parser.add_argument('-device',
+                    default="cuda:0",
+                    type=str,
+                    help='whether to use resnet or not')
+
+parser.add_argument('-model_path',
+                    default="",
+                    type=str,
+                    help='whether to use resnet or not')
+
 args = parser.parse_args()
 
 MAIN_DIR = args.main_dir
 lengths = args.split
+problem = None
 if args.method == "unsupervised":
+    sequence_8 = Downloader('08')
+    if not os.path.exists("./dataset/poses"):
+        print("Download dataset")
+        sequence_8.download_sequence()
     dataset = pykitti.odometry(MAIN_DIR, '08', frames=range(*args.frames_range))
     dataset_manager = UnsupervisedDatasetManager(dataset, lengths=lengths)
 
-    model = UnDeepVO(args.max_depth).cuda()
+    model = UnDeepVO(args.max_depth, args.min_depth, args.resnet).to(args.device)
 
-    criterion = UnsupervisedCriterion(dataset_manager.get_cameras_calibration("cuda:0"),
-                                      args.lambda_position, args.lambda_rotation, args.lambda_s, args.lambda_disparity)
+    if args.model_path != "":
+        model.load_state_dict(torch.load(args.model_path, map_location=args.device))
+    criterion = UnsupervisedCriterion(dataset_manager.get_cameras_calibration(args.device),
+                                      args.lambda_position,
+                                      args.lambda_rotation,
+                                      args.lambda_s,
+                                      args.lambda_disparity,
+                                      args.lambda_registration)
     handler = TrainingProcessHandler(enable_mlflow=True, mlflow_tags={"name": args.mlflow_tags_name},
-                                     mlflow_parameters={"image_step": args.frames_range[2], "max_depth": args.max_depth,
-                                                        "epoch": args.epoch, "lambda_position": args.lambda_position,
+                                     mlflow_parameters={"image_step": args.frames_range[2],
+                                                        "max_depth": args.max_depth,
+                                                        "epoch": args.epoch,
+                                                        "lambda_position": args.lambda_position,
                                                         "lambda_rotation": args.lambda_rotation,
                                                         "lambda_s": args.lambda_s,
-                                                        "lambda_disparity": args.lambda_disparity})
-    optimizer_manager = OptimizerManager(lr=args.lr)
+                                                        "lambda_disparity": args.lambda_disparity,
+                                                        "lr": args.lr,
+                                                        "batch_size": args.batch_size,
+                                                        "betta2": args.betta2,
+                                                        "betta1": args.betta1,
+                                                        "min_depth": args.min_depth,
+                                                        "lambda_registration": args.lambda_registration},
+                                     enable_iteration_progress_bar=True)
+    optimizer_manager = OptimizerManager(lr=args.lr, betas=(args.betta1, args.betta2))
     problem = UnsupervisedDepthProblem(model, criterion, optimizer_manager, dataset_manager, handler,
-                                       batch_size=args.batch, name="undeepvo")
+                                       batch_size=args.batch_size, name="undeepvo", device=args.device)
 
 elif args.method == "supervised":
     dataset = GroundTruthDataset(length=lengths)
@@ -140,4 +196,5 @@ elif args.method == "supervised":
 else:
     exit("Unknown method")
 
-problem.train(args.epoch)
+if problem is not None:
+    problem.train(args.epoch)
