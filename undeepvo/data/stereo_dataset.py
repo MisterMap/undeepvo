@@ -1,3 +1,4 @@
+import pykitti
 from torch.utils.data import Dataset
 
 from .image_sequence import ImageSequence
@@ -5,7 +6,7 @@ from .pose_sequence import PoseSequence
 
 
 class StereoDataset(Dataset):
-    def __init__(self, dataset, transform=None):
+    def __init__(self, dataset: pykitti.odometry, transform=None):
         self._image_sequence = ImageSequence(dataset)
         self._pose_sequence = PoseSequence(dataset)
         self._transform = transform

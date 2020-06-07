@@ -2,3 +2,5 @@ from .unsupervised_dataset_manager import UnsupervisedDatasetManager
 from .unsupervised_depth_problem import UnsupervisedDepthProblem
 from .supervised_dataset_manager import SupervisedDatasetManager
 from .supervised_depth_problem import SupervisedDepthProblem
+from .depth_model_evaluator import DepthModelEvaluator
+from .video_visualizer import VideoVisualizer

@@ -1,8 +1,10 @@
+import pykitti
+
 from .image_data_point import ImageDataPoint
 
 
 class ImageSequence:
-    def __init__(self, dataset):
+    def __init__(self, dataset: pykitti.odometry):
         self._length = len(list(dataset.rgb))
         self._dataset = dataset
         self._img_size = self._dataset.get_rgb(0)[0].size[::-1]  # PIL Image size
