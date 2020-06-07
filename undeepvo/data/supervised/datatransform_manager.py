@@ -3,7 +3,7 @@ import albumentations
 
 class DataTransformManager:
     def __init__(self, used_img_size, final_img_size, transform_params):
-        self._ratio = max(float(final_img_size[0]) / used_img_size[0], float(final_img_size[0]) / used_img_size[0])
+        self._ratio = max(float(final_img_size[0]) / used_img_size[0], float(final_img_size[1]) / used_img_size[1])
         self._final_img_size = final_img_size
         self._scale_compose = [
             albumentations.Resize(height=int(used_img_size[0] * self._ratio), width=int(used_img_size[1] * self._ratio),

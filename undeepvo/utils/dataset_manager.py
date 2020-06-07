@@ -24,7 +24,7 @@ class DatasetManager(abc.ABC):
         return []
 
     def get_test_dataset(self):
-        return self._validation_dataset
+        return self._test_dataset
 
     def get_train_dataset(self):
         return self._train_dataset
