@@ -39,7 +39,6 @@ class UnsupervisedDatasetManager(DatasetManager):
 
     @staticmethod
     def get_cameras_calibration(device="cuda:0"):
-        scale = 3.
         height = 128
         width = 384
         origin_focal = 707.0912
@@ -47,16 +46,22 @@ class UnsupervisedDatasetManager(DatasetManager):
         original_cy = 183.1104
         original_height = 384
         original_width = 1248
-        focal = origin_focal / scale
+        scale_y = original_height / height
+        scale_x = original_width / width
+
+        focal_y = origin_focal / scale_y
+        focal_x = origin_focal / scale_x
+        
         original_delta_cx = original_cx - original_width / 2
         original_delta_cy = original_cy - original_height / 2
-        cx = width / 2 + original_delta_cx / scale
-        cy = height / 2 + original_delta_cy / scale
-        left_camera_matrix = np.array([[focal, 0., cx],
-                                       [0., focal, cy],
+        cx = width / 2 + original_delta_cx / scale_x
+        cy = height / 2 + original_delta_cy / scale_y
+
+        left_camera_matrix = np.array([[focal_x, 0., cx],
+                                       [0., focal_y, cy],
                                        [0., 0., 1.]])
-        right_camera_matrix = np.array([[focal, 0., cx],
-                                        [0., focal, cy],
+        right_camera_matrix = np.array([[focal_x, 0., cx],
+                                        [0., focal_y, cy],
                                         [0., 0., 1.]])
         camera_baseline = 0.54
         return CamerasCalibration(camera_baseline, left_camera_matrix, right_camera_matrix, device)
