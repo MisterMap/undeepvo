@@ -5,17 +5,10 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 from tqdm.auto import tqdm
 
-from .mflow_handler import MlFlowHandler
-
 
 class TrainingProcessHandler(object):
     def __init__(self, data_folder="logs", model_folder="model", enable_iteration_progress_bar=False,
-                 model_save_key="loss", mlflow_tags=None, mlflow_parameters=None, enable_mlflow=True,
-                 mlflow_experiment_name="undeepvo"):
-        if mlflow_tags is None:
-            mlflow_tags = {}
-        if mlflow_parameters is None:
-            mlflow_parameters = {}
+                 model_save_key="loss", mlflow_handler=None):
         self._name = None
         self._epoch_count = 0
         self._iteration_count = 0
@@ -41,11 +34,7 @@ class TrainingProcessHandler(object):
         self._audio_configs = {}
         self._global_epoch_step = 0
         self._global_iteration_step = 0
-        if enable_mlflow:
-            self._mlflow_handler = MlFlowHandler(experiment_name=mlflow_experiment_name,
-                                                 mlflow_tags=mlflow_tags, mlflow_parameters=mlflow_parameters)
-        else:
-            self._mlflow_handler = None
+        self._mlflow_handler = mlflow_handler
         self._artifacts = []
 
     def setup_handler(self, name, model):
