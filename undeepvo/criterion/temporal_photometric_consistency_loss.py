@@ -19,14 +19,14 @@ class TemporalPhotometricConsistencyLoss(torch.nn.Module):
         return loss
 
     def generate_next_image(self, current_image, next_depth, transformation_from_next_to_current):
-        generated_next_image = kornia.warp_frame_depth(current_image,
+        generated_next_image = kornia.geometry.depth.warp_frame_depth(current_image,
                                                        next_depth,
                                                        transformation_from_next_to_current,
                                                        self.camera_matrix)
         return generated_next_image
 
     def generate_current_image(self, next_image, current_depth, transformation_from_current_to_next):
-        generated_current_image = kornia.warp_frame_depth(next_image,
+        generated_current_image = kornia.geometry.depth.warp_frame_depth(next_image,
                                                           current_depth,
                                                           transformation_from_current_to_next,
                                                           self.camera_matrix)
