@@ -11,7 +11,7 @@ class TemporalPhotometricConsistencyLoss(torch.nn.Module):
         super().__init__()
         self.camera_matrix = camera_matrix
         self.lambda_s = lambda_s
-        self.ssim_loss = kornia.losses.SSIM(window_size=window_size, reduction=reduction, max_val=max_val)
+        self.ssim_loss = kornia.losses.SSIMLoss(window_size=window_size, reduction=reduction, max_val=max_val)
         self.l1_loss = torch.nn.L1Loss()
 
     def calculate_loss(self, image1, image2):
