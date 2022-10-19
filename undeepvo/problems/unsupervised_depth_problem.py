@@ -123,11 +123,11 @@ class UnsupervisedDepthProblem(Problem):
         right_current_image = data_point["right_current_image"][None].to(self._device)
         cameras_calibration = self._dataset_manager.get_cameras_calibration(device=self._device)
         with torch.no_grad():
-            generated_left_image = kornia.warp_frame_depth(right_current_image,
+            generated_left_image = kornia.geometry.depth.warp_frame_depth(right_current_image,
                                                            left_current_depth,
                                                            cameras_calibration.transform_from_left_to_right,
                                                            cameras_calibration.left_camera_matrix)
-            generated_right_image = kornia.warp_frame_depth(left_current_image,
+            generated_right_image = kornia.geometry.depth.warp_frame_depth(left_current_image,
                                                             right_current_depth,
                                                             torch.inverse(
                                                                 cameras_calibration.transform_from_left_to_right),
