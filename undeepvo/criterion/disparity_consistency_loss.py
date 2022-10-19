@@ -22,12 +22,12 @@ class DisparityConsistencyLoss(torch.nn.Module):
         return left_disparity, right_disparity
 
     def generate_disparity_maps(self, left_disparity, right_disparity, left_current_depth, right_current_depth):
-        generated_right_disparity = kornia.warp_frame_depth(image_src=left_disparity,
+        generated_right_disparity = kornia.geometry.depth.warp_frame_depth(image_src=left_disparity,
                                                             depth_dst=right_current_depth,
                                                             src_trans_dst=self.transform_from_left_to_right,
                                                             camera_matrix=self.left_camera_matrix)
 
-        generated_left_disparity = kornia.warp_frame_depth(image_src=right_disparity,
+        generated_left_disparity = kornia.geometry.depth.warp_frame_depth(image_src=right_disparity,
                                                            depth_dst=left_current_depth,
                                                            src_trans_dst=torch.inverse(
                                                                self.transform_from_left_to_right),

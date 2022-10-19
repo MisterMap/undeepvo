@@ -11,7 +11,7 @@ class TemporalPhotometricConsistencyLoss(torch.nn.Module):
         super().__init__()
         self.camera_matrix = camera_matrix
         self.lambda_s = lambda_s
-        self.ssim_loss = kornia.losses.SSIM(window_size=window_size, reduction=reduction, max_val=max_val)
+        self.ssim_loss = kornia.losses.SSIMLoss(window_size=window_size, reduction=reduction, max_val=max_val)
         self.l1_loss = torch.nn.L1Loss()
 
     def calculate_loss(self, image1, image2):
@@ -19,14 +19,14 @@ class TemporalPhotometricConsistencyLoss(torch.nn.Module):
         return loss
 
     def generate_next_image(self, current_image, next_depth, transformation_from_next_to_current):
-        generated_next_image = kornia.warp_frame_depth(current_image,
+        generated_next_image = kornia.geometry.depth.warp_frame_depth(current_image,
                                                        next_depth,
                                                        transformation_from_next_to_current,
                                                        self.camera_matrix)
         return generated_next_image
 
     def generate_current_image(self, next_image, current_depth, transformation_from_current_to_next):
-        generated_current_image = kornia.warp_frame_depth(next_image,
+        generated_current_image = kornia.geometry.depth.warp_frame_depth(next_image,
                                                           current_depth,
                                                           transformation_from_current_to_next,
                                                           self.camera_matrix)
