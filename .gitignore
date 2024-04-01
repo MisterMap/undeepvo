@@ -36,3 +36,8 @@ tmp
 *.pkl
 *.pt
 *.pth
+
+# Notebook Checkpoints
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+*.ipynb
