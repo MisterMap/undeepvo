@@ -40,3 +40,4 @@ tmp
 # Notebook Checkpoints
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+*.ipynb
