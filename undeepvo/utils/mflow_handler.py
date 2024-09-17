@@ -3,26 +3,26 @@ import os
 import mlflow
 import mlflow.exceptions
 
-DEFAULT_USER_NAME = ""
-DEFAULT_PASSWORD = ""
-DEFAULT_DATABRICKS_HOST = ""
-DEFAULT_HOST_URI = "http://329801-ilinvalery.tmweb.ru:5001/"
-DEFAULT_EXPERIMENT_NAME = "undeepvo"
-CREATE_DATABRICKS_CREDENTIALS = False
-
-os.environ["MLFLOW_S3_ENDPOINT_URL"] = "http://329801-ilinvalery.tmweb.ru:9000"
-os.environ["AWS_ACCESS_KEY_ID"] = "123"
-os.environ["AWS_SECRET_ACCESS_KEY"] = "12345678"
-
 
 class MlFlowHandler(object):
-    def __init__(self, experiment_name=DEFAULT_EXPERIMENT_NAME, user_name=DEFAULT_USER_NAME, password=DEFAULT_PASSWORD,
-                 host_uri=DEFAULT_HOST_URI, create_databricks_credential=CREATE_DATABRICKS_CREDENTIALS,
-                 databricks_host=DEFAULT_DATABRICKS_HOST, mlflow_tags={}, mlflow_parameters={}):
-        self._user_name = DEFAULT_USER_NAME
-        self._password = DEFAULT_PASSWORD
-        if host_uri == "databricks" and create_databricks_credential:
-            self._create_databricks_credential(user_name, password, databricks_host)
+    def __init__(self,
+                 experiment_name="",
+                 host_uri="",
+                 databricks_config=None,
+                 artifact_aws_config=None,
+                 mlflow_tags=None,
+                 mlflow_parameters=None):
+        if databricks_config is not None:
+            self._create_databricks_credential(databricks_config["username"], databricks_config["password"],
+                                               databricks_config["databricks_host"])
+        if artifact_aws_config is not None:
+            os.environ["MLFLOW_S3_ENDPOINT_URL"] = artifact_aws_config["endpoint"]
+            os.environ["AWS_ACCESS_KEY_ID"] = artifact_aws_config["username"]
+            os.environ["AWS_SECRET_ACCESS_KEY"] = artifact_aws_config["password"]
+        if mlflow_tags is None:
+            mlflow_tags = {}
+        if mlflow_parameters is None:
+            mlflow_parameters = {}
         mlflow.set_tracking_uri(host_uri)
         self._experiment_name = experiment_name
         self._mlflow_client = mlflow.tracking.MlflowClient(host_uri)
